@@ -1133,7 +1133,7 @@ static int scrub_handle_errored_block(struct scrub_block *sblock_to_check)
 
 			if (scrub_write_page_to_dev_replace(sblock_other,
 							    page_num) != 0) {
-				btrfs_dev_replace_stats_inc(
+				atomic64_inc(
 					&fs_info->dev_replace.num_write_errors);
 				success = 0;
 			}
@@ -1573,8 +1573,7 @@ static int scrub_repair_page_from_good_copy(struct scrub_block *sblock_bad,
 		if (btrfsic_submit_bio_wait(bio)) {
 			btrfs_dev_stat_inc_and_print(page_bad->dev,
 				BTRFS_DEV_STAT_WRITE_ERRS);
-			btrfs_dev_replace_stats_inc(
-				&fs_info->dev_replace.num_write_errors);
+			atomic64_inc(&fs_info->dev_replace.num_write_errors);
 			bio_put(bio);
 			return -EIO;
 		}
@@ -1601,8 +1600,7 @@ static void scrub_write_block_to_dev_replace(struct scrub_block *sblock)
 
 		ret = scrub_write_page_to_dev_replace(sblock, page_num);
 		if (ret)
-			btrfs_dev_replace_stats_inc(
-				&fs_info->dev_replace.num_write_errors);
+			atomic64_inc(&fs_info->dev_replace.num_write_errors);
 	}
 }
 
@@ -1746,8 +1744,7 @@ static void scrub_wr_bio_end_io_worker(struct btrfs_work *work)
 			struct scrub_page *spage = sbio->pagev[i];
 
 			spage->io_error = 1;
-			btrfs_dev_replace_stats_inc(&dev_replace->
-						    num_write_errors);
+			atomic64_inc(&dev_replace->num_write_errors);
 		}
 	}
 
