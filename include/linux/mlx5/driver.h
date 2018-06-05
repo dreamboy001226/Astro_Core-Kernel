@@ -804,7 +804,7 @@ struct mlx5_pps {
 };
 
 struct mlx5_clock {
-	rwlock_t                   lock;
+	seqlock_t                  lock;
 	struct cyclecounter        cycles;
 	struct timecounter         tc;
 	struct hwtstamp_config     hwtstamp_config;
