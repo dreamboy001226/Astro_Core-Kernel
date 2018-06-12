@@ -99,6 +99,17 @@ static void *dax_make_locked(unsigned long pfn, unsigned long flags)
 			DAX_LOCKED);
 }
 
+static void *dax_make_entry(pfn_t pfn, unsigned long flags)
+{
+	return xa_mk_value(flags | (pfn_t_to_pfn(pfn) << DAX_SHIFT));
+}
+
+static void *dax_make_page_entry(struct page *page)
+{
+	pfn_t pfn = page_to_pfn_t(page);
+	return dax_make_entry(pfn, PageHead(page) ? DAX_PMD : 0);
+}
+
 static bool dax_is_locked(void *entry)
 {
 	return xa_to_value(entry) & DAX_LOCKED;
@@ -499,18 +510,14 @@ static struct page *dax_busy_page(void *entry)
 
 bool dax_lock_mapping_entry(struct page *page)
 {
-	pgoff_t index;
-	struct inode *inode;
-	bool did_lock = false;
-	void *entry = NULL, **slot;
-	struct address_space *mapping;
+	XA_STATE(xas, NULL, 0);
+	void *entry;
 
-	rcu_read_lock();
 	for (;;) {
-		mapping = READ_ONCE(page->mapping);
+		struct address_space *mapping = READ_ONCE(page->mapping);
 
-		if (!mapping || !dax_mapping(mapping))
-			break;
+		if (!dax_mapping(mapping))
+			return false;
 
 		/*
 		 * In the device-dax case there's no need to lock, a
@@ -519,49 +526,40 @@ bool dax_lock_mapping_entry(struct page *page)
 		 * otherwise we would not have a valid pfn_to_page()
 		 * translation.
 		 */
-		inode = mapping->host;
-		if (S_ISCHR(inode->i_mode)) {
-			did_lock = true;
-			break;
-		}
+		if (S_ISCHR(mapping->host->i_mode))
+			return true;
 
-		xa_lock_irq(&mapping->i_pages);
+		xas.xa = &mapping->i_pages;
+		xas_lock_irq(&xas);
 		if (mapping != page->mapping) {
-			xa_unlock_irq(&mapping->i_pages);
+			xas_unlock_irq(&xas);
 			continue;
 		}
-		index = page->index;
-
-		entry = __radix_tree_lookup(&mapping->i_pages, index,
-						NULL, &slot);
-		if (!entry) {
-			xa_unlock_irq(&mapping->i_pages);
-			break;
-		} else if (slot_locked(mapping, slot)) {
-			rcu_read_unlock();
-			wait_entry_unlocked(mapping, index, &slot, entry);
-			rcu_read_lock();
-			continue;
+		xas_set(&xas, page->index);
+		entry = xas_load(&xas);
+		if (dax_is_locked(entry)) {
+			entry = get_unlocked_entry(&xas);
+			/* Did the page move while we slept? */
+			if (dax_to_pfn(entry) != page_to_pfn(page)) {
+				xas_unlock_irq(&xas);
+				continue;
+			}
 		}
-		lock_slot(mapping, slot);
-		did_lock = true;
-		xa_unlock_irq(&mapping->i_pages);
-		break;
+		dax_lock_entry(&xas, entry);
+		xas_unlock_irq(&xas);
+		return true;
 	}
-	rcu_read_unlock();
-
-	return did_lock;
 }
 
 void dax_unlock_mapping_entry(struct page *page)
 {
 	struct address_space *mapping = page->mapping;
-	struct inode *inode = mapping->host;
+	XA_STATE(xas, &mapping->i_pages, page->index);
 
-	if (S_ISCHR(inode->i_mode))
+	if (S_ISCHR(mapping->host->i_mode))
 		return;
 
-	unlock_mapping_entry(mapping, page->index);
+	dax_unlock_entry(&xas, dax_make_page_entry(page));
 }
 
 /*
