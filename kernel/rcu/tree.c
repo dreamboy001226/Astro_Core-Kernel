@@ -1495,7 +1495,7 @@ static void print_cpu_stall(void)
 	resched_cpu(smp_processor_id());
 }
 
-static void check_cpu_stall(struct rcu_state *rsp, struct rcu_data *rdp)
+static void check_cpu_stall(struct rcu_data *rdp)
 {
 	unsigned long gs1;
 	unsigned long gs2;
@@ -1504,6 +1504,7 @@ static void check_cpu_stall(struct rcu_state *rsp, struct rcu_data *rdp)
 	unsigned long jn;
 	unsigned long js;
 	struct rcu_node *rnp;
+	struct rcu_state *rsp = &rcu_state;
 
 	if ((rcu_cpu_stall_suppress && !rcu_kick_kthreads) ||
 	    !rcu_gp_in_progress())
@@ -3198,7 +3199,7 @@ static int __rcu_pending(struct rcu_state *rsp, struct rcu_data *rdp)
 	struct rcu_node *rnp = rdp->mynode;
 
 	/* Check for CPU stalls, if enabled. */
-	check_cpu_stall(rsp, rdp);
+	check_cpu_stall(rdp);
 
 	/* Is this CPU a NO_HZ_FULL CPU that should ignore RCU? */
 	if (rcu_nohz_full_cpu(rsp))
