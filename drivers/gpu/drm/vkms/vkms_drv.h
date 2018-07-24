@@ -22,6 +22,14 @@ static const u32 vkms_formats[] = {
 	DRM_FORMAT_XRGB8888,
 };
 
+/**
+ * vkms_crtc_state - Driver specific CRTC state
+ * @base: base CRTC state
+ */
+struct vkms_crtc_state {
+	struct drm_crtc_state base;
+};
+
 struct vkms_output {
 	struct drm_crtc crtc;
 	struct drm_encoder encoder;
@@ -53,6 +61,9 @@ struct vkms_gem_object {
 
 #define drm_gem_to_vkms_gem(target)\
 	container_of(target, struct vkms_gem_object, gem)
+
+#define to_vkms_crtc_state(target)\
+	container_of(target, struct vkms_crtc_state, base)
 
 /* CRTC */
 int vkms_crtc_init(struct drm_device *dev, struct drm_crtc *crtc,
