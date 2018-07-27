@@ -403,6 +403,8 @@ struct i915_ggtt {
 
 	int mtrr;
 
+	u32 pin_bias;
+
 	struct drm_mm_node error_capture;
 };
 
