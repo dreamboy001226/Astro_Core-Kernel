@@ -459,7 +459,7 @@ static int mv88e6xxx_g1_irq_setup(struct mv88e6xxx_chip *chip)
 	mutex_unlock(&chip->reg_lock);
 	err = request_threaded_irq(chip->irq, NULL,
 				   mv88e6xxx_g1_irq_thread_fn,
-				   IRQF_ONESHOT,
+				   IRQF_ONESHOT | IRQF_SHARED,
 				   dev_name(chip->dev), chip);
 	mutex_lock(&chip->reg_lock);
 	if (err)
