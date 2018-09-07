@@ -27,7 +27,6 @@
 #include <linux/kmod.h>
 #include <linux/list.h>
 #include <linux/hrtimer.h>
-#include <linux/lockdep.h>
 #include <linux/slab.h>
 #include <linux/hashtable.h>
 
@@ -1068,10 +1067,6 @@ static int qdisc_block_indexes_set(struct Qdisc *sch, struct nlattr **tca,
 	return 0;
 }
 
-/* lockdep annotation is needed for ingress; egress gets it only for name */
-static struct lock_class_key qdisc_tx_lock;
-static struct lock_class_key qdisc_rx_lock;
-
 /*
    Allocate and initialize new qdisc.
 
@@ -1141,7 +1136,6 @@ static struct Qdisc *qdisc_create(struct net_device *dev,
 			goto err_out3;
 		}
 		handle = TC_H_MAKE(TC_H_INGRESS, 0);
-		lockdep_set_class(qdisc_lock(sch), &qdisc_rx_lock);
 	} else {
 		if (handle == 0) {
 			handle = qdisc_alloc_handle(dev);
@@ -1149,7 +1143,6 @@ static struct Qdisc *qdisc_create(struct net_device *dev,
 			if (handle == 0)
 				goto err_out3;
 		}
-		lockdep_set_class(qdisc_lock(sch), &qdisc_tx_lock);
 		if (!netif_is_multiqueue(dev))
 			sch->flags |= TCQ_F_ONETXQUEUE;
 	}
