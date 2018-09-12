@@ -1760,17 +1760,13 @@ static struct sk_buff *tun_build_skb(struct tun_struct *tun,
 			xdp_do_flush();
 			if (err)
 				goto err_redirect;
-			rcu_read_unlock();
-			local_bh_enable();
-			return NULL;
+			goto out;
 		case XDP_TX:
 			get_page(alloc_frag->page);
 			alloc_frag->offset += buflen;
 			if (tun_xdp_tx(tun->dev, &xdp) < 0)
 				goto err_redirect;
-			rcu_read_unlock();
-			local_bh_enable();
-			return NULL;
+			goto out;
 		case XDP_PASS:
 			delta = orig_data - xdp.data;
 			len = xdp.data_end - xdp.data;
@@ -1802,7 +1798,7 @@ static struct sk_buff *tun_build_skb(struct tun_struct *tun,
 
 err_redirect:
 	put_page(alloc_frag->page);
-err_xdp:
+out:
 	rcu_read_unlock();
 	local_bh_enable();
 	this_cpu_inc(tun->pcpu_stats->rx_dropped);
