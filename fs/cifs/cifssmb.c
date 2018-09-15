@@ -5054,6 +5054,13 @@ oldQFSInfoRetry:
 				le16_to_cpu(response_data->BytesPerSector) *
 				le32_to_cpu(response_data->
 					SectorsPerAllocationUnit);
+			/*
+			 * much prefer larger but if server doesn't report
+			 * a valid size than 4K is a reasonable minimum
+			 */
+			if (FSData->f_bsize < 512)
+				FSData->f_bsize = 4096;
+
 			FSData->f_blocks =
 			       le32_to_cpu(response_data->TotalAllocationUnits);
 			FSData->f_bfree = FSData->f_bavail =
@@ -5134,6 +5141,13 @@ QFSInfoRetry:
 			    le32_to_cpu(response_data->BytesPerSector) *
 			    le32_to_cpu(response_data->
 					SectorsPerAllocationUnit);
+			/*
+			 * much prefer larger but if server doesn't report
+			 * a valid size than 4K is a reasonable minimum
+			 */
+			if (FSData->f_bsize < 512)
+				FSData->f_bsize = 4096;
+
 			FSData->f_blocks =
 			    le64_to_cpu(response_data->TotalAllocationUnits);
 			FSData->f_bfree = FSData->f_bavail =
@@ -5497,6 +5511,13 @@ QFSPosixRetry:
 				 data_offset);
 			FSData->f_bsize =
 					le32_to_cpu(response_data->BlockSize);
+			/*
+			 * much prefer larger but if server doesn't report
+			 * a valid size than 4K is a reasonable minimum
+			 */
+			if (FSData->f_bsize < 512)
+				FSData->f_bsize = 4096;
+
 			FSData->f_blocks =
 					le64_to_cpu(response_data->TotalBlocks);
 			FSData->f_bfree =
