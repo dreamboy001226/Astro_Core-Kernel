@@ -282,6 +282,7 @@ class MainWindow(QMainWindow):
 		style = self.style()
 		icon = style.standardIcon(QStyle.SP_MessageBoxInformation)
 		self.setWindowIcon(icon);
+		self.setMinimumSize(200, 100)
 
 		self.model = TreeModel(db)
 
