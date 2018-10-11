@@ -4841,7 +4841,7 @@ delete:
 				btrfs_abort_transaction(trans, ret);
 				break;
 			}
-			if (btrfs_should_throttle_delayed_refs(trans, fs_info))
+			if (btrfs_should_throttle_delayed_refs(trans))
 				btrfs_async_run_delayed_refs(fs_info,
 					trans->delayed_ref_updates * 2,
 					trans->transid, 0);
@@ -4850,8 +4850,7 @@ delete:
 							 extent_num_bytes)) {
 					should_end = true;
 				}
-				if (btrfs_should_throttle_delayed_refs(trans,
-								       fs_info))
+				if (btrfs_should_throttle_delayed_refs(trans))
 					should_throttle = true;
 			}
 		}
