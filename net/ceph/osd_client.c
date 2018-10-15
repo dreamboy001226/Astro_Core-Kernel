@@ -4499,12 +4499,6 @@ alloc_linger_request(struct ceph_osd_linger_request *lreq)
 
 	ceph_oid_copy(&req->r_base_oid, &lreq->t.base_oid);
 	ceph_oloc_copy(&req->r_base_oloc, &lreq->t.base_oloc);
-
-	if (ceph_osdc_alloc_messages(req, GFP_NOIO)) {
-		ceph_osdc_put_request(req);
-		return NULL;
-	}
-
 	return req;
 }
 
@@ -4522,6 +4516,12 @@ alloc_watch_request(struct ceph_osd_linger_request *lreq, u8 watch_opcode)
 	 * filled in by linger_submit().
 	 */
 	osd_req_op_watch_init(req, 0, 0, watch_opcode);
+
+	if (ceph_osdc_alloc_messages(req, GFP_NOIO)) {
+		ceph_osdc_put_request(req);
+		return NULL;
+	}
+
 	return req;
 }
 
@@ -4672,12 +4672,12 @@ int ceph_osdc_notify_ack(struct ceph_osd_client *osdc,
 	ceph_oloc_copy(&req->r_base_oloc, oloc);
 	req->r_flags = CEPH_OSD_FLAG_READ;
 
-	ret = ceph_osdc_alloc_messages(req, GFP_NOIO);
+	ret = osd_req_op_notify_ack_init(req, 0, notify_id, cookie, payload,
+					 payload_len);
 	if (ret)
 		goto out_put_req;
 
-	ret = osd_req_op_notify_ack_init(req, 0, notify_id, cookie, payload,
-					 payload_len);
+	ret = ceph_osdc_alloc_messages(req, GFP_NOIO);
 	if (ret)
 		goto out_put_req;
 
@@ -4781,6 +4781,10 @@ int ceph_osdc_notify(struct ceph_osd_client *osdc,
 	ceph_osd_data_pages_init(osd_req_op_data(lreq->reg_req, 0, notify,
 						 response_data),
 				 pages, PAGE_SIZE, 0, false, true);
+
+	ret = ceph_osdc_alloc_messages(lreq->reg_req, GFP_NOIO);
+	if (ret)
+		goto out_put_lreq;
 
 	linger_submit(lreq);
 	ret = linger_reg_commit_wait(lreq);
@@ -4909,10 +4913,6 @@ int ceph_osdc_list_watchers(struct ceph_osd_client *osdc,
 	ceph_oloc_copy(&req->r_base_oloc, oloc);
 	req->r_flags = CEPH_OSD_FLAG_READ;
 
-	ret = ceph_osdc_alloc_messages(req, GFP_NOIO);
-	if (ret)
-		goto out_put_req;
-
 	pages = ceph_alloc_page_vector(1, GFP_NOIO);
 	if (IS_ERR(pages)) {
 		ret = PTR_ERR(pages);
@@ -4923,6 +4923,10 @@ int ceph_osdc_list_watchers(struct ceph_osd_client *osdc,
 	ceph_osd_data_pages_init(osd_req_op_data(req, 0, list_watchers,
 						 response_data),
 				 pages, PAGE_SIZE, 0, false, true);
+
+	ret = ceph_osdc_alloc_messages(req, GFP_NOIO);
+	if (ret)
+		goto out_put_req;
 
 	ceph_osdc_start_request(osdc, req, false);
 	ret = ceph_osdc_wait_request(osdc, req);
@@ -4986,10 +4990,6 @@ int ceph_osdc_call(struct ceph_osd_client *osdc,
 	ceph_oloc_copy(&req->r_base_oloc, oloc);
 	req->r_flags = flags;
 
-	ret = ceph_osdc_alloc_messages(req, GFP_NOIO);
-	if (ret)
-		goto out_put_req;
-
 	ret = osd_req_op_cls_init(req, 0, class, method);
 	if (ret)
 		goto out_put_req;
@@ -5000,6 +5000,10 @@ int ceph_osdc_call(struct ceph_osd_client *osdc,
 	if (resp_page)
 		osd_req_op_cls_response_data_pages(req, 0, &resp_page,
 						   *resp_len, 0, false, false);
+
+	ret = ceph_osdc_alloc_messages(req, GFP_NOIO);
+	if (ret)
+		goto out_put_req;
 
 	ceph_osdc_start_request(osdc, req, false);
 	ret = ceph_osdc_wait_request(osdc, req);
