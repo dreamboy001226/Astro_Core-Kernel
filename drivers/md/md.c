@@ -1858,10 +1858,6 @@ static int super_1_validate(struct mddev *mddev, struct md_rdev *freshest, struc
 					set_bit(In_sync, &rdev->flags);
 			}
 			rdev->raid_disk = role;
-			if (role >= mddev->raid_disks) {
-				rdev->saved_raid_disk = -1;
-				rdev->raid_disk = -1;
-			}
 			break;
 		}
 		if (sb->devflags & WriteMostly1)
