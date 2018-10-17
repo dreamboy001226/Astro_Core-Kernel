@@ -659,7 +659,10 @@ static ssize_t amdgpu_set_pp_dpm_sclk(struct device *dev,
 		return ret;
 
 	if (adev->powerplay.pp_funcs->force_clock_level)
-		amdgpu_dpm_force_clock_level(adev, PP_SCLK, mask);
+		ret = amdgpu_dpm_force_clock_level(adev, PP_SCLK, mask);
+
+	if (ret)
+		return -EINVAL;
 
 	return count;
 }
@@ -692,7 +695,10 @@ static ssize_t amdgpu_set_pp_dpm_mclk(struct device *dev,
 		return ret;
 
 	if (adev->powerplay.pp_funcs->force_clock_level)
-		amdgpu_dpm_force_clock_level(adev, PP_MCLK, mask);
+		ret = amdgpu_dpm_force_clock_level(adev, PP_MCLK, mask);
+
+	if (ret)
+		return -EINVAL;
 
 	return count;
 }
@@ -725,7 +731,10 @@ static ssize_t amdgpu_set_pp_dpm_pcie(struct device *dev,
 		return ret;
 
 	if (adev->powerplay.pp_funcs->force_clock_level)
-		amdgpu_dpm_force_clock_level(adev, PP_PCIE, mask);
+		ret = amdgpu_dpm_force_clock_level(adev, PP_PCIE, mask);
+
+	if (ret)
+		return -EINVAL;
 
 	return count;
 }
