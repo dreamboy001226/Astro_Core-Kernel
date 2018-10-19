@@ -70,8 +70,7 @@ void afs_update_inode_from_status(struct afs_vnode *vnode,
 	struct timespec64 t;
 	umode_t mode;
 
-	t.tv_sec = status->mtime_client;
-	t.tv_nsec = 0;
+	t = status->mtime_client;
 	vnode->vfs_inode.i_ctime = t;
 	vnode->vfs_inode.i_mtime = t;
 	vnode->vfs_inode.i_atime = t;
@@ -195,8 +194,10 @@ static int xdr_decode_AFSFetchStatus(struct afs_call *call,
 	EXTRACT_M(mode);
 	EXTRACT_M(group);
 
-	status->mtime_client = ntohl(xdr->mtime_client);
-	status->mtime_server = ntohl(xdr->mtime_server);
+	status->mtime_client.tv_sec = ntohl(xdr->mtime_client);
+	status->mtime_client.tv_nsec = 0;
+	status->mtime_server.tv_sec = ntohl(xdr->mtime_server);
+	status->mtime_server.tv_nsec = 0;
 	status->lock_count   = ntohl(xdr->lock_count);
 
 	size  = (u64)ntohl(xdr->size_lo);
