@@ -417,6 +417,7 @@ static struct scsi_host_template ahci_platform_sht = {
 static const struct of_device_id ahci_of_match[] = {
 	{.compatible = "brcm,bcm7425-ahci", .data = (void *)BRCM_SATA_BCM7425},
 	{.compatible = "brcm,bcm7445-ahci", .data = (void *)BRCM_SATA_BCM7445},
+	{.compatible = "brcm,bcm63138-ahci", .data = (void *)BRCM_SATA_BCM7445},
 	{.compatible = "brcm,bcm-nsp-ahci", .data = (void *)BRCM_SATA_NSP},
 	{},
 };
@@ -451,6 +452,20 @@ static int brcm_ahci_probe(struct platform_device *pdev)
 	priv->rcdev = devm_reset_control_get(&pdev->dev, "ahci");
 	if (!IS_ERR_OR_NULL(priv->rcdev))
 		reset_control_deassert(priv->rcdev);
+
+	if ((priv->version == BRCM_SATA_BCM7425) ||
+		(priv->version == BRCM_SATA_NSP)) {
+		priv->quirks |= BRCM_AHCI_QUIRK_NO_NCQ;
+		priv->quirks |= BRCM_AHCI_QUIRK_SKIP_PHY_ENABLE;
+	}
+
+	brcm_sata_init(priv);
+
+	priv->port_mask = brcm_ahci_get_portmask(pdev, priv);
+	if (!priv->port_mask)
+		return -ENODEV;
+
+	brcm_sata_phys_enable(priv);
 
 	hpriv = ahci_platform_get_resources(pdev, 0);
 	if (IS_ERR(hpriv)) {
