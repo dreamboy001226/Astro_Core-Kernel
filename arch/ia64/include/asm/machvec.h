@@ -43,7 +43,6 @@ typedef void ia64_mv_kernel_launch_event_t(void);
 
 /* DMA-mapping interface: */
 typedef void ia64_mv_dma_init (void);
-typedef u64 ia64_mv_dma_get_required_mask (struct device *);
 typedef const struct dma_map_ops *ia64_mv_dma_get_ops(struct device *);
 
 /*
@@ -119,7 +118,6 @@ extern void machvec_timer_interrupt (int, void *);
 #  define platform_timer_interrupt	ia64_mv.timer_interrupt
 #  define platform_global_tlb_purge	ia64_mv.global_tlb_purge
 #  define platform_dma_init		ia64_mv.dma_init
-#  define platform_dma_get_required_mask ia64_mv.dma_get_required_mask
 #  define platform_dma_get_ops		ia64_mv.dma_get_ops
 #  define platform_irq_to_vector	ia64_mv.irq_to_vector
 #  define platform_local_vector_to_irq	ia64_mv.local_vector_to_irq
@@ -162,7 +160,6 @@ struct ia64_machine_vector {
 	ia64_mv_timer_interrupt_t *timer_interrupt;
 	ia64_mv_global_tlb_purge_t *global_tlb_purge;
 	ia64_mv_dma_init *dma_init;
-	ia64_mv_dma_get_required_mask *dma_get_required_mask;
 	ia64_mv_dma_get_ops *dma_get_ops;
 	ia64_mv_irq_to_vector *irq_to_vector;
 	ia64_mv_local_vector_to_irq *local_vector_to_irq;
@@ -201,7 +198,6 @@ struct ia64_machine_vector {
 	platform_timer_interrupt,		\
 	platform_global_tlb_purge,		\
 	platform_dma_init,			\
-	platform_dma_get_required_mask,		\
 	platform_dma_get_ops,			\
 	platform_irq_to_vector,			\
 	platform_local_vector_to_irq,		\
@@ -272,9 +268,6 @@ extern const struct dma_map_ops *dma_get_ops(struct device *);
 #endif
 #ifndef platform_dma_get_ops
 # define platform_dma_get_ops		dma_get_ops
-#endif
-#ifndef platform_dma_get_required_mask
-# define  platform_dma_get_required_mask	ia64_dma_get_required_mask
 #endif
 #ifndef platform_irq_to_vector
 # define platform_irq_to_vector		__ia64_irq_to_vector

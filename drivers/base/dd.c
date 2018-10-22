@@ -1014,6 +1014,12 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		else if (drv->remove)
 			drv->remove(dev);
 
+<<<<<<< HEAD
+=======
+		device_links_driver_cleanup(dev);
+		arch_teardown_dma_ops(dev);
+
+>>>>>>> cff229491af5d (Merge tag 'dma-mapping-4.20' of git://git.infradead.org/users/hch/dma-mapping)
 		devres_release_all(dev);
 		dma_deconfigure(dev);
 		dev->driver = NULL;
