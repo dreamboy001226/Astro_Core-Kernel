@@ -311,6 +311,10 @@ struct se_geni_rsc {
 #define SE_DMA_TX_FSM_RST	(0xC58)
 #define SE_DMA_TX_MAX_BURST	(0xC5C)
 
+#define GENI_SE_VERSION_MAJOR(ver) ((ver & HW_VER_MAJOR_MASK) >> HW_VER_MAJOR_SHFT)
+#define GENI_SE_VERSION_MINOR(ver) ((ver & HW_VER_MINOR_MASK) >> HW_VER_MINOR_SHFT)
+#define GENI_SE_VERSION_STEP(ver) (ver & HW_VER_STEP_MASK)
+
 #define SE_DMA_RX_PTR_L		(0xD30)
 #define SE_DMA_RX_PTR_H		(0xD34)
 #define SE_DMA_RX_ATTR		(0xD38)

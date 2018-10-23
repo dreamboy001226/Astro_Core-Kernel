@@ -225,6 +225,9 @@ static bool spi_imx_can_dma(struct spi_master *master, struct spi_device *spi,
 	if (spi_imx->slave_mode)
 		return false;
 
+	if (transfer->len < spi_imx->devtype_data->fifo_size)
+		return false;
+
 	spi_imx->dynamic_burst = 0;
 
 	return true;
@@ -622,6 +625,7 @@ static void mx51_setup_wml(struct spi_imx_data *spi_imx)
 	 * Configure the DMA register: setup the watermark
 	 * and enable DMA request.
 	 */
+
 	writel(MX51_ECSPI_DMA_RX_WML(spi_imx->wml - 1) |
 		MX51_ECSPI_DMA_TX_WML(spi_imx->wml) |
 		MX51_ECSPI_DMA_RXT_WML(spi_imx->wml) |
