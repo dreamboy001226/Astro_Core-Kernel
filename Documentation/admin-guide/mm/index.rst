@@ -29,7 +29,11 @@ the Linux memory management.
    hugetlbpage
    idle_page_tracking
    ksm
+<<<<<<< HEAD
    multigen_lru
+=======
+   memory-hotplug
+>>>>>>> 01aa9d518eae8 (Merge tag 'docs-4.20' of git://git.lwn.net/linux)
    numa_memory_policy
    pagemap
    soft-dirty

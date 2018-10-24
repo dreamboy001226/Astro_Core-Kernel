@@ -223,8 +223,14 @@ particular struct completion at any time - serialized through the wait
 queue spinlock. Any such concurrent calls to complete() or complete_all()
 probably are a design bug.
 
+<<<<<<< HEAD
 Signaling completion from hard-irq context is fine as it will appropriately
 lock with spin_lock_irqsave/spin_unlock_irqrestore and it will never sleep.
+=======
+Signaling completion from IRQ context is fine as it will appropriately
+lock with spin_lock_irqsave()/spin_unlock_irqrestore() and it will never
+sleep. 
+>>>>>>> 01aa9d518eae8 (Merge tag 'docs-4.20' of git://git.lwn.net/linux)
 
 
 try_wait_for_completion()/completion_done():
