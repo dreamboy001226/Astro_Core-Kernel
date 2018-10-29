@@ -922,13 +922,14 @@ xfs_reflink_update_dest(
 	struct xfs_inode	*dest,
 	xfs_off_t		newlen,
 	xfs_extlen_t		cowextsize,
-	bool			is_dedupe)
+	unsigned int		remap_flags)
 {
 	struct xfs_mount	*mp = dest->i_mount;
 	struct xfs_trans	*tp;
 	int			error;
 
-	if (is_dedupe && newlen <= i_size_read(VFS_I(dest)) && cowextsize == 0)
+	if ((remap_flags & REMAP_FILE_DEDUP) &&
+	    newlen <= i_size_read(VFS_I(dest)) && cowextsize == 0)
 		return 0;
 
 	error = xfs_trans_alloc(mp, &M_RES(mp)->tr_ichange, 0, 0, 0, &tp);
@@ -949,7 +950,7 @@ xfs_reflink_update_dest(
 		dest->i_d.di_flags2 |= XFS_DIFLAG2_COWEXTSIZE;
 	}
 
-	if (!is_dedupe) {
+	if (!(remap_flags & REMAP_FILE_DEDUP)) {
 		xfs_trans_ichgtime(tp, dest,
 				   XFS_ICHGTIME_MOD | XFS_ICHGTIME_CHG);
 	}
@@ -1305,7 +1306,7 @@ xfs_reflink_remap_prep(
 	struct file		*file_out,
 	loff_t			pos_out,
 	u64			*len,
-	bool			is_dedupe)
+	unsigned int		remap_flags)
 {
 	struct inode		*inode_in = file_inode(file_in);
 	struct xfs_inode	*src = XFS_I(inode_in);
@@ -1336,7 +1337,7 @@ xfs_reflink_remap_prep(
 		goto out_unlock;
 
 	ret = generic_remap_file_range_prep(file_in, pos_in, file_out, pos_out,
-			len, is_dedupe);
+			len, remap_flags);
 	if (ret <= 0)
 		goto out_unlock;
 
@@ -1345,7 +1346,7 @@ xfs_reflink_remap_prep(
 	 * from the source file so we don't try to dedupe the partial
 	 * EOF block.
 	 */
-	if (is_dedupe) {
+	if (remap_flags & REMAP_FILE_DEDUP) {
 		*len &= ~blkmask;
 	} else if (*len & blkmask) {
 		/*
@@ -1391,7 +1392,7 @@ xfs_reflink_remap_prep(
 		goto out_unlock;
 
 	/* If we're altering the file contents... */
-	if (!is_dedupe) {
+	if (!(remap_flags & REMAP_FILE_DEDUP)) {
 		/*
 		 * ...update the timestamps (which will grab the ilock again
 		 * from xfs_fs_dirty_inode, so we have to call it before we
@@ -1429,7 +1430,7 @@ xfs_reflink_remap_range(
 	struct file		*file_out,
 	loff_t			pos_out,
 	u64			len,
-	bool			is_dedupe)
+	unsigned int		remap_flags)
 {
 	struct inode		*inode_in = file_inode(file_in);
 	struct xfs_inode	*src = XFS_I(inode_in);
@@ -1449,7 +1450,7 @@ xfs_reflink_remap_range(
 
 	/* Prepare and then clone file data. */
 	ret = xfs_reflink_remap_prep(file_in, pos_in, file_out, pos_out,
-			&len, is_dedupe);
+			&len, remap_flags);
 	if (ret <= 0)
 		return ret;
 
@@ -1476,7 +1477,7 @@ xfs_reflink_remap_range(
 		cowextsize = src->i_d.di_cowextsize;
 
 	ret = xfs_reflink_update_dest(dest, pos_out + len, cowextsize,
-			is_dedupe);
+			remap_flags);
 
 out_unlock:
 	xfs_reflink_remap_unlock(file_in, file_out);
