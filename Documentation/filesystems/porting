@@ -624,6 +624,7 @@ in your dentry operations instead.
 	original, on failure - ERR_PTR().
 --
 [mandatory]
+<<<<<<< HEAD
 	DCACHE_RCUACCESS is gone; having an RCU delay on dentry freeing is the
 	default.  DCACHE_NORCU opts out, and only d_alloc_pseudo() has any
 	business doing so.
@@ -663,3 +664,8 @@ in your dentry operations instead.
 	there, but that's it.  Freeing memory in the callback is fine; doing
 	more than that is possible, but requires a lot of care and is best
 	avoided.
+=======
+	->clone_file_range() and ->dedupe_file_range have been replaced with
+	->remap_file_range().  See Documentation/filesystems/vfs.txt for more
+	information.
+>>>>>>> 2e5dfc99f2e61 (vfs: combine the clone and dedupe into a single remap_file_range)
