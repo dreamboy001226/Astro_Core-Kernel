@@ -374,6 +374,7 @@ static int __swiotlb_mmap(struct device *dev,
 	return __swiotlb_mmap_pfn(vma, pfn, size);
 }
 
+#ifdef CONFIG_IOMMU_DMA
 static int __swiotlb_get_sgtable_page(struct sg_table *sgt,
 				      struct page *page, size_t size)
 {
@@ -393,6 +394,7 @@ static int __swiotlb_get_sgtable(struct device *dev, struct sg_table *sgt,
 
 	return __swiotlb_get_sgtable_page(sgt, page, size);
 }
+#endif /* CONFIG_IOMMU_DMA */
 
 static int __swiotlb_dma_supported(struct device *hwdev, u64 mask)
 {
