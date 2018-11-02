@@ -1094,6 +1094,7 @@ static int geni_i2c_probe(struct platform_device *pdev)
 	pm_runtime_set_autosuspend_delay(gi2c->dev, I2C_AUTO_SUSPEND_DELAY);
 	pm_runtime_use_autosuspend(gi2c->dev);
 	pm_runtime_enable(gi2c->dev);
+
 	ret = i2c_add_adapter(&gi2c->adap);
 	if (ret) {
 		dev_err(gi2c->dev, "Add adapter failed\n");
@@ -1108,8 +1109,8 @@ static int geni_i2c_remove(struct platform_device *pdev)
 {
 	struct geni_i2c_dev *gi2c = platform_get_drvdata(pdev);
 
-	pm_runtime_disable(gi2c->dev);
 	i2c_del_adapter(&gi2c->adap);
+	pm_runtime_disable(gi2c->dev);
 	if (gi2c->ipcl)
 		ipc_log_context_destroy(gi2c->ipcl);
 	return 0;
