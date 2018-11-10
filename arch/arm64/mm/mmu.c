@@ -726,6 +726,8 @@ void __init paging_init(void)
 		      __pa_symbol(swapper_pg_end) - __pa_symbol(swapper_pg_dir)
 		      - PAGE_SIZE);
 	set_memsize_kernel_type(MEMSIZE_KERNEL_OTHERS);
+
+	memblock_allow_resize();
 }
 
 #ifdef CONFIG_MEMORY_HOTPLUG

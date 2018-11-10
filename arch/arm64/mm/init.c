@@ -611,8 +611,6 @@ void __init arm64_memblock_init(void)
 
 	dma_contiguous_reserve(arm64_dma_phys_limit);
 	set_memsize_kernel_type(MEMSIZE_KERNEL_OTHERS);
-
-	memblock_allow_resize();
 }
 
 void __init bootmem_init(void)
