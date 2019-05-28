@@ -1379,16 +1379,16 @@ static bool rcu_advance_cbs(struct rcu_node *rnp, struct rcu_data *rdp)
 }
 
 /*
- * In CONFIG_RCU_STRICT_GRACE_PERIOD=y kernels, attempt to generate a
- * quiescent state.  This is intended to be invoked when the CPU notices
- * a new grace period.
+ * Move and classify callbacks, but only if doing so won't require
+ * that the RCU grace-period kthread be awakened.
  */
-static void rcu_strict_gp_check_qs(void)
+static void __maybe_unused rcu_advance_cbs_nowake(struct rcu_node *rnp,
+						  struct rcu_data *rdp)
 {
-	if (IS_ENABLED(CONFIG_RCU_STRICT_GRACE_PERIOD)) {
-		rcu_read_lock();
-		rcu_read_unlock();
-	}
+	raw_lockdep_assert_held_rcu_node(rnp);
+	if (!rcu_seq_state(rcu_seq_current(&rnp->gp_seq)))
+		return;
+	WARN_ON_ONCE(rcu_advance_cbs(rnp, rdp));
 }
 
 /*
@@ -2196,6 +2196,8 @@ static void rcu_do_batch(struct rcu_data *rdp)
 			      rcu_segcblist_n_lazy_cbs(&rdp->cblist),
 			      rcu_segcblist_n_cbs(&rdp->cblist), bl);
 	rcu_segcblist_extract_done_cbs(&rdp->cblist, &rcl);
+	if (offloaded)
+		rdp->qlen_last_fqs_check = rcu_segcblist_n_cbs(&rdp->cblist);
 	rcu_nocb_unlock_irqrestore(rdp, flags);
 
 	/* Invoke callbacks. */
