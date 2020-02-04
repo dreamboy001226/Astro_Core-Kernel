@@ -650,11 +650,24 @@ static void hmm_pfns_clear(struct hmm_range *range,
 
 static void hmm_pfns_special(struct hmm_range *range)
 {
-	unsigned long addr = range->start, i = 0;
+	struct hmm_vma_walk *hmm_vma_walk = walk->private;
+	struct hmm_range *range = hmm_vma_walk->range;
+	unsigned long addr = start;
+	pud_t pud;
+	int ret = 0;
+	spinlock_t *ptl = pud_trans_huge_lock(pudp, walk->vma);
 
-	for (; addr < range->end; addr += PAGE_SIZE, i++)
-		range->pfns[i] = range->values[HMM_PFN_SPECIAL];
-}
+	if (!ptl)
+		return 0;
+
+	/* Normally we don't want to split the huge page */
+	walk->action = ACTION_CONTINUE;
+
+	pud = READ_ONCE(*pudp);
+	if (pud_none(pud)) {
+		ret = hmm_vma_walk_hole(start, end, walk);
+		goto out_unlock;
+	}
 
 /*
  * hmm_vma_get_pfns() - snapshot CPU page table for a range of virtual addresses
@@ -680,11 +693,10 @@ int hmm_vma_get_pfns(struct hmm_range *range)
 	struct mm_walk mm_walk;
 	struct hmm *hmm;
 
-	/* Sanity check, this really should not happen ! */
-	if (range->start < vma->vm_start || range->start >= vma->vm_end)
-		return -EINVAL;
-	if (range->end < vma->vm_start || range->end > vma->vm_end)
-		return -EINVAL;
+		if (!pud_present(pud)) {
+			ret = hmm_vma_walk_hole(start, end, walk);
+			goto out_unlock;
+		}
 
 	hmm = hmm_register(vma->vm_mm);
 	if (!hmm)
@@ -693,13 +705,112 @@ int hmm_vma_get_pfns(struct hmm_range *range)
 	if (!hmm->mmu_notifier.ops)
 		return -EINVAL;
 
-	/* FIXME support hugetlb fs */
-	if (is_vm_hugetlb_page(vma) || (vma->vm_flags & VM_SPECIAL) ||
-			vma_is_dax(vma)) {
-		hmm_pfns_special(range);
-		return -EINVAL;
+		cpu_flags = pud_to_hmm_pfn_flags(range, pud);
+		hmm_range_need_fault(hmm_vma_walk, pfns, npages,
+				     cpu_flags, &fault, &write_fault);
+		if (fault || write_fault) {
+			ret = hmm_vma_walk_hole_(addr, end, fault,
+						 write_fault, walk);
+			goto out_unlock;
+		}
+
+		pfn = pud_pfn(pud) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
+		for (i = 0; i < npages; ++i, ++pfn) {
+			hmm_vma_walk->pgmap = get_dev_pagemap(pfn,
+					      hmm_vma_walk->pgmap);
+			if (unlikely(!hmm_vma_walk->pgmap)) {
+				ret = -EBUSY;
+				goto out_unlock;
+			}
+			pfns[i] = hmm_device_entry_from_pfn(range, pfn) |
+				  cpu_flags;
+		}
+		if (hmm_vma_walk->pgmap) {
+			put_dev_pagemap(hmm_vma_walk->pgmap);
+			hmm_vma_walk->pgmap = NULL;
+		}
+		hmm_vma_walk->last = end;
+		goto out_unlock;
 	}
 
+	/* Ask for the PUD to be split */
+	walk->action = ACTION_SUBTREE;
+
+out_unlock:
+	spin_unlock(ptl);
+	return ret;
+}
+#else
+#define hmm_vma_walk_pud	NULL
+#endif
+
+#ifdef CONFIG_HUGETLB_PAGE
+static int hmm_vma_walk_hugetlb_entry(pte_t *pte, unsigned long hmask,
+				      unsigned long start, unsigned long end,
+				      struct mm_walk *walk)
+{
+	unsigned long addr = start, i, pfn;
+	struct hmm_vma_walk *hmm_vma_walk = walk->private;
+	struct hmm_range *range = hmm_vma_walk->range;
+	struct vm_area_struct *vma = walk->vma;
+	uint64_t orig_pfn, cpu_flags;
+	bool fault, write_fault;
+	spinlock_t *ptl;
+	pte_t entry;
+	int ret = 0;
+
+	ptl = huge_pte_lock(hstate_vma(vma), walk->mm, pte);
+	entry = huge_ptep_get(pte);
+
+	i = (start - range->start) >> PAGE_SHIFT;
+	orig_pfn = range->pfns[i];
+	range->pfns[i] = range->values[HMM_PFN_NONE];
+	cpu_flags = pte_to_hmm_pfn_flags(range, entry);
+	fault = write_fault = false;
+	hmm_pte_need_fault(hmm_vma_walk, orig_pfn, cpu_flags,
+			   &fault, &write_fault);
+	if (fault || write_fault) {
+		ret = -ENOENT;
+		goto unlock;
+	}
+
+	pfn = pte_pfn(entry) + ((start & ~hmask) >> PAGE_SHIFT);
+	for (; addr < end; addr += PAGE_SIZE, i++, pfn++)
+		range->pfns[i] = hmm_device_entry_from_pfn(range, pfn) |
+				 cpu_flags;
+	hmm_vma_walk->last = end;
+
+unlock:
+	spin_unlock(ptl);
+
+	if (ret == -ENOENT)
+		return hmm_vma_walk_hole_(addr, end, fault, write_fault, walk);
+
+	return ret;
+}
+#else
+#define hmm_vma_walk_hugetlb_entry NULL
+#endif /* CONFIG_HUGETLB_PAGE */
+
+static int hmm_vma_walk_test(unsigned long start, unsigned long end,
+			     struct mm_walk *walk)
+{
+	struct hmm_vma_walk *hmm_vma_walk = walk->private;
+	struct hmm_range *range = hmm_vma_walk->range;
+	struct vm_area_struct *vma = walk->vma;
+
+	/*
+	 * Skip vma ranges that don't have struct page backing them or
+	 * map I/O devices directly.
+	 */
+	if (vma->vm_flags & (VM_IO | VM_PFNMAP | VM_MIXEDMAP))
+		return -EFAULT;
+
+	/*
+	 * If the vma does not allow read access, then assume that it does not
+	 * allow write access either. HMM does not support architectures
+	 * that allow write without read.
+	 */
 	if (!(vma->vm_flags & VM_READ)) {
 		/*
 		 * If vma do not allow read access, then assume that it does
