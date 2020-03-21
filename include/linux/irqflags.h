@@ -80,6 +80,8 @@ do {						\
 # define trace_hardirq_exit()		((void)0)
 # define lockdep_softirq_enter()	((void)0)
 # define lockdep_softirq_exit()		((void)0)
+# define lockdep_irq_work_enter(__work)         ((void)0)
+# define lockdep_irq_work_exit(__work)          ((void)0)
 #endif
 
 #if defined(CONFIG_IRQSOFF_TRACER) || \
