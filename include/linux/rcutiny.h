@@ -85,7 +85,10 @@ static inline void rcu_irq_exit_irqson(void) { }
 static inline void rcu_irq_enter_irqson(void) { }
 static inline void rcu_irq_exit(void) { }
 static inline void rcu_irq_exit_preempt(void) { }
+<<<<<<< HEAD
 static inline void rcu_irq_exit_check_preempt(void) { }
+=======
+>>>>>>> d2bd340446a3d (rcu: Provide rcu_irq_exit_preempt())
 static inline void exit_rcu(void) { }
 static inline bool rcu_preempt_need_deferred_qs(struct task_struct *t)
 {
