@@ -232,6 +232,4 @@ obj-$(CONFIG_GPS_BCM4753)	+= gps/
 # SPU signature verify
 obj-$(CONFIG_SPU_VERIFY) += spu_verify/
 
-# DTS_EAGLE START
 obj-$(CONFIG_AINUR_DTS_SW) += dts_eagle/
-# DTS_EAGLE END
