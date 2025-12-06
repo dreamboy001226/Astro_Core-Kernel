@@ -2,7 +2,7 @@
 LLVM_PATH="/home/skye/toolchains/neutron-clang/bin/"
 LLVM_PATH="/home/skye/toolchains/neutron-clang/bin/"
 
-KERNEL_NAME="seconds-to-midnight"
+KERNEL_NAME="metric"
 
 HOST_BUILD_ENV="ARCH=arm64 \
                 CC=${LLVM_PATH}clang \
@@ -57,6 +57,6 @@ gitsha=$(git rev-parse --short HEAD)
 cd "$ANYKERNEL_DIR" || exit 1
 rm -f *.zip
 
-zip -r9 "not_kernel-${KERNEL_NAME}-$gitsha-$(date +"%Y%m%d")+r8q.zip" .
+zip -r9 "not-${KERNEL_NAME}-$gitsha+r8q.zip" .
 
 echo "The bomb has been planted."
