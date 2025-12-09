@@ -424,18 +424,12 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq)
 	int val, level = 0;
 	unsigned int scm_data[4];
 	int context_count = 0;
-<<<<<<< HEAD:drivers/gpu/msm/governor_msm_adreno_tz.c
 	
-	if (!priv)
-		return 0;
-		
-=======
 #if 1
 	int last_level = priv->bin.last_level;
 //	int max_state_val = devfreq->profile->max_state - 1;
 #endif
 
->>>>>>> 54a47520640fa (Introduce Adreno idler for devfreq-based Adreno devices):drivers/devfreq/governor_msm_adreno_tz.c
 	/* keeps stats.private_data == NULL   */
 	result = devfreq_update_stats(devfreq);
 	if (result) {

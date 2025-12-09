@@ -31,7 +31,7 @@
 #include <linux/module.h>
 #include <linux/devfreq.h>
 #include <linux/state_notifier.h>
-#include <linux/msm_adreno_devfreq.h>
+#include "msm_adreno_devfreq.h"
 
 #define ADRENO_IDLER_MAJOR_VERSION 1
 #define ADRENO_IDLER_MINOR_VERSION 1
