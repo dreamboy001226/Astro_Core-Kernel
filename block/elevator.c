@@ -613,6 +613,11 @@ int elevator_init_mq(struct request_queue *q)
 
 	if (unlikely(q->elevator))
 		goto out;
+#ifdef CONFIG_MQ_IOSCHED_DEFAULT_ADIOS
+	e = elevator_get(q, "adios", false);
+	if (!e)
+		goto out;
+#else // !CONFIG_MQ_IOSCHED_DEFAULT_ADIOS
 	if (IS_ENABLED(CONFIG_IOSCHED_BFQ)) {
 		e = elevator_get(q, "bfq", false);
 		if (!e)
@@ -622,6 +627,7 @@ int elevator_init_mq(struct request_queue *q)
 		if (!e)
 			goto out;
 	}
+#endif //CONFIG_MQ_IOSCHED_DEFAULT_ADIOS
 	err = blk_mq_init_sched(q, e);
 	if (err)
 		elevator_put(e);

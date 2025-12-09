@@ -20,6 +20,7 @@ obj-$(CONFIG_BLK_DEV_THROTTLING)	+= blk-throttle.o
 obj-$(CONFIG_BLK_CGROUP_IOLATENCY)	+= blk-iolatency.o
 obj-$(CONFIG_MQ_IOSCHED_DEADLINE)	+= mq-deadline.o
 obj-$(CONFIG_MQ_IOSCHED_KYBER)	+= kyber-iosched.o
+obj-$(CONFIG_MQ_IOSCHED_ADIOS)	+= adios.o
 ssg-$(CONFIG_MQ_IOSCHED_SSG)	:= ssg-iosched.o
 ssg-$(CONFIG_MQ_IOSCHED_SSG_CGROUP)	+= ssg-cgroup.o
 obj-$(CONFIG_MQ_IOSCHED_SSG)	+= ssg.o
@@ -54,3 +55,9 @@ CFLAGS_blk-merge.o = -Wformat
 CFLAGS_elevator.o = -Wformat
 CFLAGS_cfq-iosched.o = -Wformat
 CFLAGS_genhd.o = -Wformat
+
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+clean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
