@@ -2,6 +2,7 @@
 #
 # Makefile for the linux ext4-filesystem routines.
 #
+ccflags-y += -O3
 
 obj-$(CONFIG_EXT4_FS) += ext4.o
 
