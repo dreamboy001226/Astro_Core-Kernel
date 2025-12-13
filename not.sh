@@ -23,7 +23,7 @@ echo "*****************************************"
 echo "*****************************************"
 
 rm -rf "$OUT_DIR/arch/arm64/boot/Image"
-rm -rf "$ANYKERNEL_DIR/dtb"
+rm -rf "$ANYKERNEL_DIR/kona.dtb"
 rm -rf "$OUT_DIR/dtbo.img"
 rm -rf .version .local
 make O="$OUT_DIR" $HOST_BUILD_ENV vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/samsung/r8q.config
@@ -37,7 +37,7 @@ make -j12 O="$OUT_DIR" $KERNEL_MAKE_ENV $HOST_BUILD_ENV \
      CC="${LLVM_PATH}clang --target=aarch64-linux-gnu" dtbo.img
 
 cp "$DTBO_OUT/dtbo.img" "$ANYKERNEL_DIR/dtbo.img"
-cat "$DTB_OUT"/*.dtb > "$ANYKERNEL_DIR/dtb"
+cat "$DTB_OUT"/*.dtb > "$ANYKERNEL_DIR/kona.dtb"
 
 # Build Kernel Image
 
