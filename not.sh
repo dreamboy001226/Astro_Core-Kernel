@@ -2,7 +2,7 @@
 LLVM_PATH="/home/skye/toolchains/neutron-clang/bin/"
 LLVM_PATH="/home/skye/toolchains/neutron-clang/bin/"
 
-KERNEL_NAME="chaoticn't"
+KERNEL_NAME="Aviva"
 
 HOST_BUILD_ENV="ARCH=arm64 \
                 CC=${LLVM_PATH}clang \
