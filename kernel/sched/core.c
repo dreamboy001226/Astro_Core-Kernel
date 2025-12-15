@@ -7008,6 +7008,8 @@ int do_unisolation_work_cpu_stop(void *data)
 	return 0;
 }
 
+extern void init_sched_groups_capacity(int cpu, struct sched_domain *sd);
+
 static void sched_update_group_capacities(int cpu)
 {
 	struct sched_domain *sd;
