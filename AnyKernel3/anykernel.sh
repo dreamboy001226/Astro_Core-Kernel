@@ -51,18 +51,11 @@ esac
 
 # begin cmdline changes
 oneui=$(file_getprop /system/build.prop ro.build.version.oneui);
-gsi=$(file_getprop /system/build.prop ro.product.system.device);
 cos=$(file_getprop /system/build.prop ro.product.system.brand);
 if [ -n "$oneui" ]; then
    ui_print " "
    ui_print " • OneUI ROM detected! • " # OneUI 7.X/6.X/5.X/4.X/3.X bomb
    ui_print " "
-elif [ $gsi == generic ]; then
-   ui_print " "
-   ui_print " • GSI ROM detected! • " # i hope the gsi doesnt boot :)
-   ui_print " "
-   ui_print " • Patching SELinux... • "
-   patch_cmdline "androidboot.selinux" "androidboot.selinux=permissive";
 elif [ $cos == oplus ]; then
    ui_print " "
    ui_print " • Oplus ROM detected! • " # Damn
