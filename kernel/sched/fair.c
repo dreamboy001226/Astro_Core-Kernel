@@ -4638,6 +4638,8 @@ static inline void adjust_cpus_for_packing(struct task_struct *p,
 
 static inline void update_misfit_status(struct task_struct *p, struct rq *rq)
 {
+	int cpu = cpu_of(rq);
+
 	if (!static_branch_unlikely(&sched_asym_cpucapacity))
 		return;
 
@@ -6748,7 +6750,7 @@ static void set_task_max_allowed_capacity(struct task_struct *p)
 		cpumask_t *cpumask;
 
 		cpumask = cpu_capacity_span(entry);
-		if (!cpumask_intersects(p->cpus_ptr, cpumask))
+		if (!cpumask_intersects(&p->cpus_allowed, cpumask))
 			continue;
 
 		p->max_allowed_capacity = entry->capacity;
@@ -6757,10 +6759,9 @@ static void set_task_max_allowed_capacity(struct task_struct *p)
 	rcu_read_unlock();
 }
 
-static void set_cpus_allowed_fair(struct task_struct *p, const struct cpumask *new_mask,
-				  u32 flags)
+static void set_cpus_allowed_fair(struct task_struct *p, const struct cpumask *new_mask)
 {
-	set_cpus_allowed_common(p, new_mask, flags);
+	set_cpus_allowed_common(p, new_mask);
 	set_task_max_allowed_capacity(p);
 }
 
