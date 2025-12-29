@@ -62,6 +62,7 @@ void arch_set_max_freq_scale(const struct cpumask *cpus,
 
 static DEFINE_MUTEX(cpu_scale_mutex);
 DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+EXPORT_PER_CPU_SYMBOL_GPL(cpu_scale);
 DEFINE_PER_CPU(unsigned long, arch_min_freq_scale);
 
 void arch_set_min_freq_scale(const struct cpumask *cpus,
