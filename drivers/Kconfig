@@ -245,8 +245,6 @@ source "drivers/samsung/Kconfig"
 
 source "drivers/adsp_factory/Kconfig"
 
-source "drivers/staging/samsung/sec_notifier/Kconfig"
-
 source "drivers/switch/Kconfig"
 
 source "drivers/muic/Kconfig"
@@ -262,7 +260,5 @@ source "drivers/fingerprint/Kconfig"
 source "drivers/gator/Kconfig"
 
 source "drivers/spu_verify/Kconfig"
-
-source "drivers/dts_eagle/Kconfig"
 
 endmenu
