@@ -7,7 +7,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 
-ZIPNAME="not-$(date '+%Y%m%d-%H%M')-r8q.zip"
+ZIPNAME="not-$(date '+%Y%m%d').zip"
 TC_DIR="$(pwd)/tc/clang-r522817"
 AK3_DIR="$(pwd)/AnyKernel3"
 DEFCONFIG="vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/samsung/r8q.config vendor/not/no_werror.config vendor/not/no_lto.config"
@@ -18,7 +18,7 @@ DTS_DIR="$BOOT_DIR/dts/vendor/qcom"
 
 if test -z "$(git rev-parse --show-cdup 2>/dev/null)" &&
    head=$(git rev-parse --verify HEAD 2>/dev/null); then
-    ZIPNAME="${ZIPNAME::-4}-$(echo $head | cut -c1-8).zip"
+    ZIPNAME="${ZIPNAME::-4}-$(echo $head | cut -c1-8)-r8q.zip"
 fi
 
 export PATH="$TC_DIR/bin:$PATH"
