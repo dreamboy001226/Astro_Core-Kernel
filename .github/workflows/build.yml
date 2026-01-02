@@ -52,21 +52,21 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             –––––––––––––––––––––––––––––––––––––
-            | ⚙️ not_kernel CI build complete!  |
-            | 🌊 Version – :ELEMENT.            |
+            | ⚙️ not_kernel CI build complete!       |
+            | 🌊 Version - :ELEMENT.                        |
             –––––––––––––––––––––––––––––––––––––
-              ⏱️ Build time – ${{ env.BUILD_DURATION }}
+            |  ⏱️ Build time – ${{ env.BUILD_DURATION }}                     | 
             –––––––––––––––––––––––––––––––––––––
 
       - name: Upload to Telegram
         run: |
           gitsha1=$(git rev-parse --short HEAD)
           printf " Localversion: `cat out/include/config/kernel.release`
-          Clang version: AOSP Clang 18.0.1
-          Build Date: `date +'%d %B %Y'`
-          Build commit hash: $gitsha1
-          SusFS version: v2.0.0
-          KernelSU version: 33333" >> buildDetails.txt
+           | Clang version: AOSP Clang 18.0.1
+           | Build Date: `date +'%d %B %Y'`
+           | Build commit hash: $gitsha1
+           | SusFS version: v2.0.0
+           | KernelSU version: 33333" >> buildDetails.txt
           buildDetails="`cat buildDetails.txt`"
           zip_file=$(ls not-*.zip)
           msg="*not\\-kernel* build for the *Galaxy S20FE \\(r8q\\)*
