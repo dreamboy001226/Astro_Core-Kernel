@@ -63,15 +63,10 @@ elif [ $cos == oplus ]; then
    ui_print " "
    ui_print " • Patching SELinux... • "
    patch_cmdline "androidboot.selinux" "androidboot.selinux=permissive";
-   ui_print " "
-   ui_print " • Spoofing verified boot state to green... • "
-   patch_cmdline "ro.boot.verifiedbootstate=orange" "ro.boot.verifiedbootstate=green";
 else
    ui_print " "
    ui_print " • AOSP ROM detected! • " # Android 16/15/14/13 veri gud
    ui_print " "
-   ui_print " • Spoofing verified boot state to green... • "
-   patch_cmdline "ro.boot.verifiedbootstate=orange" "ro.boot.verifiedbootstate=green";
 fi
 
 ui_print " "
