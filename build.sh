@@ -14,7 +14,7 @@ DEFCONFIG="vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/s
 
 OUT_DIR="$(pwd)/out"
 BOOT_DIR="$OUT_DIR/arch/arm64/boot"
-DTS_DIR="$BOOT_DIR/vendor/qcom"
+DTS_DIR="$BOOT_DIR/dts/vendor/qcom"
 
 if test -z "$(git rev-parse --show-cdup 2>/dev/null)" &&
    head=$(git rev-parse --verify HEAD 2>/dev/null); then
@@ -67,7 +67,7 @@ if [ -f "$BOOT_DIR/Image" ]; then
         exit 1
     fi
 else
-    echo -e "\n${RED}Compilation failed! Image.gz not found.${NC}"
+    echo -e "\n${RED}Compilation failed! Image not found.${NC}"
     exit 1
 fi
 
