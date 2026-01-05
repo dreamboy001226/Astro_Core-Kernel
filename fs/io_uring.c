@@ -912,7 +912,7 @@ static void io_async_list_note(int rw, struct io_kiocb *req, size_t len)
 		/* Use 8x RA size as a decent limiter for both reads/writes */
 		max_pages = filp->f_ra.ra_pages;
 		if (!max_pages)
-			max_pages = VM_MAX_READAHEAD >> (PAGE_SHIFT - 10);
+			max_pages = VM_READAHEAD_PAGES >> (PAGE_SHIFT - 10);
 		max_pages *= 8;
 
 		/* If max pages are exceeded, reset the state */
@@ -1957,7 +1957,6 @@ static int io_cqring_wait(struct io_ring_ctx *ctx, int min_events,
 			  const sigset_t __user *sig, size_t sigsz)
 {
 	struct io_cq_ring *ring = ctx->cq_ring;
-	sigset_t ksigmask, sigsaved;
 	DEFINE_WAIT(wait);
 	int ret;
 
@@ -1965,12 +1964,6 @@ static int io_cqring_wait(struct io_ring_ctx *ctx, int min_events,
 	smp_rmb();
 	if (io_cqring_events(ring) >= min_events)
 		return 0;
-
-	if (sig) {
-		ret = set_user_sigmask(sig, &ksigmask, &sigsaved, sigsz);
-		if (ret)
-			return ret;
-	}
 
 	do {
 		prepare_to_wait(&ctx->wait, &wait, TASK_INTERRUPTIBLE);
@@ -1989,9 +1982,6 @@ static int io_cqring_wait(struct io_ring_ctx *ctx, int min_events,
 	} while (1);
 
 	finish_wait(&ctx->wait, &wait);
-
-	if (sig)
-		restore_user_sigmask(sig, &sigsaved);
 
 	return READ_ONCE(ring->r.head) == READ_ONCE(ring->r.tail) ? ret : 0;
 }
