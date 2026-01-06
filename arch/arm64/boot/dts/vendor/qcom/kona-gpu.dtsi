@@ -198,9 +198,21 @@
 				qcom,mempool-page-size = <65536>;
 				qcom,mempool-reserved = <512>;
 			};
-			/* 1M Page Pool configuration */
+			/* 128K Page Pool configuration */
 			qcom,gpu-mempool@3 {
+				qcom,mempool-reserved = <256>;
+				qcom,mempool-page-size = <131072>;
 				reg = <3>;
+			};
+			/* 256K Page Pool configuration */
+			qcom,gpu-mempool@4 {
+				qcom,mempool-reserved = <160>;
+				qcom,mempool-page-size = <262144>;
+				reg = <4>;
+			};
+			/* 1M Page Pool configuration */
+			qcom,gpu-mempool@5 {
+				reg = <5>;
 				qcom,mempool-page-size = <1048576>;
 				qcom,mempool-reserved = <64>;
 			};
