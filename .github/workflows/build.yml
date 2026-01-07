@@ -56,8 +56,8 @@ jobs:
            | KernelSU version: 33333
            | SELinux: Enforcing" >> buildDetails.txt
           buildDetails="`cat buildDetails.txt`"
-          zip_file=$(ls not-*.zip)
-          msg="*not\\-kernel* build for the *Galaxy S20FE \\(r8q\\)*
+          zip_file=$(ls not-CI-*.zip)
+          msg="*not\\-kernel* CI build for the *Galaxy S20FE \\(r8q\\)*
           * *
           \`\`\`
           $buildDetails

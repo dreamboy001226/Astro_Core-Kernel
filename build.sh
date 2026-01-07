@@ -7,7 +7,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 
-ZIPNAME="not-$(date '+%Y%m%d').zip"
+ZIPNAME="not-CI-$(date '+%Y%m%d').zip"
 TC_DIR="$(pwd)/tc/clang-r522817"
 AK3_DIR="$(pwd)/AnyKernel3"
 DEFCONFIG="vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/samsung/r8q.config vendor/not/no_werror.config vendor/not/no_lto.config"
@@ -53,11 +53,11 @@ if [ -f "$BOOT_DIR/Image" ]; then
     echo -e "${GREEN}Kernel Image found!${NC}"
     
     if [ -d "$DTS_DIR" ]; then
-        echo -e "${BLUE}Generating dtb.img from $DTS_DIR...${NC}"
+        echo -e "${BLUE}Generating dtb from $DTS_DIR...${NC}"
         cat $(find "$DTS_DIR" -type f -name "*.dtb" | sort) > "$BOOT_DIR/kona.dtb"
         
         if [ -f "$BOOT_DIR/kona.dtb" ]; then
-            echo -e "${GREEN}dtb.img generated successfully!${NC}"
+            echo -e "${GREEN}dtb generated successfully!${NC}"
         else
             echo -e "${RED}Failed to generate kona.dtb! Check if dtbs were compiled.${NC}"
             exit 1
