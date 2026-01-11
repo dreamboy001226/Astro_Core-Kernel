@@ -701,13 +701,9 @@ void remove_proc_entry(const char *name, struct proc_dir_entry *parent)
 
 	de = pde_subdir_find(parent, fn, len);
 	if (de) {
-		if (unlikely(pde_is_permanent(de))) {
-			WARN(1, "removing permanent /proc entry '%s'", de->name);
-			de = NULL;
-		} else {
-			pde_erase(de, parent);
-			if (S_ISDIR(de->mode))
-				parent->nlink--;
+		pde_erase(de, parent);
+		if (S_ISDIR(de->mode)) {
+			parent->nlink--;
 		}
 	}
 	write_unlock(&proc_subdir_lock);
@@ -743,24 +739,12 @@ int remove_proc_subtree(const char *name, struct proc_dir_entry *parent)
 		write_unlock(&proc_subdir_lock);
 		return -ENOENT;
 	}
-	if (unlikely(pde_is_permanent(root))) {
-		write_unlock(&proc_subdir_lock);
-		WARN(1, "removing permanent /proc entry '%s/%s'",
-			root->parent->name, root->name);
-		return -EINVAL;
-	}
 	pde_erase(root, parent);
 
 	de = root;
 	while (1) {
 		next = pde_subdir_first(de);
 		if (next) {
-			if (unlikely(pde_is_permanent(root))) {
-				write_unlock(&proc_subdir_lock);
-				WARN(1, "removing permanent /proc entry '%s/%s'",
-					next->parent->name, next->name);
-				return -EINVAL;
-			}
 			pde_erase(next, de);
 			de = next;
 			continue;
