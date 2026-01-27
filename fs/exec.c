@@ -77,6 +77,9 @@ int suid_dumpable = 0;
 #define LIBPERFMGR_BIN "/vendor/bin/hw/android.hardware.power-service.pixel-libperfmgr"
 #define LIBPERFMGR_LOS "/vendor/bin/hw/android.hardware.power-service.lineage-libperfmgr"
 #define PERF "/vendor/bin/hw/vendor.qti.hardware.perf-hal-service"
+#define HYPER_HAL "/vendor/bin/hw/vendor.samsung.hardware.hyper-service"
+#define POWER_HAL "/vendor/bin/hw/android.hardware.power.samsung-service"
+#define SM_THERMAL "/vendor/bin/hw/vendor.samsung.hardware.thermal@1.0-service"
 #define PERFD "/vendor/bin/hw/vendor.qti.hardware.perf2-hal-service"
 #define PERFH "/vendor/bin/hw/vendor.qti.hardware.perf@2.2-service"
 #define IOP "/vendor/bin/hw/vendor.qti.hardware.iop@2.0-service"
@@ -1966,6 +1969,12 @@ static int __do_execve_file(int fd, struct filename *filename,
                 } else if (unlikely(!strcmp(filename->name, LIBPERFMGR_LOS))) {
                         WRITE_ONCE(powerhal_tsk, current);
                 } else if (unlikely(!strcmp(filename->name, PERF))) {
+                        WRITE_ONCE(powerhal_tsk, current);
+                } else if (unlikely(!strcmp(filename->name, HYPER_HAL))) {
+                        WRITE_ONCE(powerhal_tsk, current);
+                } else if (unlikely(!strcmp(filename->name, POWER_HAL))) {
+                        WRITE_ONCE(powerhal_tsk, current);
+                } else if (unlikely(!strcmp(filename->name, SM_THERMAL))) {
                         WRITE_ONCE(powerhal_tsk, current);
                 } else if (unlikely(!strcmp(filename->name, PERFD))) {
                         WRITE_ONCE(powerhal_tsk, current);
