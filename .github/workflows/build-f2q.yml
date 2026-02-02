@@ -1,4 +1,4 @@
-name: build not-kernel CI variant
+name: build not-kernel CI variant f2q
 
 on:
     push:
