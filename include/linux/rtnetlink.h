@@ -134,4 +134,7 @@ extern int ndo_dflt_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
 				   int (*vlan_fill)(struct sk_buff *skb,
 						    struct net_device *dev,
 						    u32 filter_mask));
+
+struct net *rtnl_get_net_ns_capable(struct sock *sk, int netnsid);
+
 #endif	/* __LINUX_RTNETLINK_H */

@@ -1855,6 +1855,33 @@ static bool link_dump_filtered(struct net_device *dev,
 	return false;
 }
 
+/**
+ * rtnl_get_net_ns_capable - Get netns if sufficiently privileged.
+ * @sk: netlink socket
+ * @netnsid: network namespace identifier
+ *
+ * Returns the network namespace identified by netnsid on success or an error
+ * pointer on failure.
+ */
+struct net *rtnl_get_net_ns_capable(struct sock *sk, int netnsid)
+{
+	struct net *net;
+
+	net = get_net_ns_by_id(sock_net(sk), netnsid);
+	if (!net)
+		return ERR_PTR(-EINVAL);
+
+	/* For now, the caller is required to have CAP_NET_ADMIN in
+	 * the user namespace owning the target net ns.
+	 */
+	if (!sk_ns_capable(sk, net->user_ns, CAP_NET_ADMIN)) {
+		put_net(net);
+		return ERR_PTR(-EACCES);
+	}
+	return net;
+}
+EXPORT_SYMBOL_GPL(rtnl_get_net_ns_capable);
+
 static struct net *get_target_net(struct sock *sk, int netnsid)
 {
 	struct net *net;
