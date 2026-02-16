@@ -516,9 +516,11 @@ re_probe:
 	if (ret)
 		goto pinctrl_bind_failed;
 
-	ret = dma_configure(dev);
-	if (ret)
-		goto probe_failed;
+	if (dev->bus->dma_configure) {
+		ret = dev->bus->dma_configure(dev);
+		if (ret)
+			goto dma_failed;
+	}
 
 	if (driver_sysfs_add(dev)) {
 		printk(KERN_ERR "%s: driver_sysfs_add(%s) failed\n",
@@ -573,13 +575,15 @@ re_probe:
 	goto done;
 
 probe_failed:
+	arch_teardown_dma_ops(dev);
+dma_failed:
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_DRIVER_NOT_BOUND, dev);
 pinctrl_bind_failed:
 	device_links_no_driver(dev);
 	devres_release_all(dev);
-	dma_deconfigure(dev);
+	arch_teardown_dma_ops(dev);
 	driver_sysfs_remove(dev);
 	dev->driver = NULL;
 	dev_set_drvdata(dev, NULL);
@@ -1014,14 +1018,8 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		else if (drv->remove)
 			drv->remove(dev);
 
-<<<<<<< HEAD
-=======
-		device_links_driver_cleanup(dev);
-		arch_teardown_dma_ops(dev);
-
->>>>>>> cff229491af5d (Merge tag 'dma-mapping-4.20' of git://git.infradead.org/users/hch/dma-mapping)
 		devres_release_all(dev);
-		dma_deconfigure(dev);
+		arch_teardown_dma_ops(dev);
 		dev->driver = NULL;
 		dev_set_drvdata(dev, NULL);
 		if (dev->pm_domain && dev->pm_domain->dismiss)
