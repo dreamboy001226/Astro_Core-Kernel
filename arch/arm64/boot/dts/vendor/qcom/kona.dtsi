@@ -3512,6 +3512,7 @@
 		qcom,hyplog-enabled;
 		hyplog-address-offset = <0x410>;
 		hyplog-size-offset = <0x414>;
+		status = "disabled";
 	};
 
 	qcom,ssc@5c00000 {
