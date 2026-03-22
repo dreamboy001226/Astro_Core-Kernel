@@ -28,7 +28,6 @@
 #include <net/protocol.h>
 #include <net/netevent.h>
 
-static int two = 2;
 static int four = 4;
 static int thousand = 1000;
 static int gso_max_segs = GSO_MAX_SEGS;
