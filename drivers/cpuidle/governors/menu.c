@@ -168,23 +168,10 @@ static inline int which_bucket(unsigned int duration, unsigned long nr_iowaiters
  * to be, the higher this multiplier, and thus the higher
  * the barrier to go to an expensive C state.
  */
-static inline int performance_multiplier(unsigned long nr_iowaiters, unsigned long load)
+static inline int performance_multiplier(unsigned long nr_iowaiters)
 {
-	int mult = 1;
-
-	/* for higher loadavg, we are more reluctant */
-
-	/*
-	 * this doesn't work as intended - it is almost always 0, but can
-	 * sometimes, depending on workload, spike very high into the hundreds
-	 * even when the average cpu load is under 10%.
-	 */
-	/* mult += 2 * get_loadavg(); */
-
-	/* for IO wait tasks (per cpu!) we add 5x each */
-	mult += 2 * nr_iowaiters;
-
-	return mult;
+	/* for IO wait tasks (per cpu!) we add 10x each */
+	return 1 + 10 * nr_iowaiters;
 }
 
 static DEFINE_PER_CPU(struct menu_device, menu_devices);
@@ -310,7 +297,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 	int idx;
 	unsigned int interactivity_req;
 	unsigned int predicted_us;
-	unsigned long nr_iowaiters, cpu_load;
+	unsigned long nr_iowaiters;
 	ktime_t delta_next;
 
 	if (data->needs_update) {
@@ -318,19 +305,10 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 		data->needs_update = 0;
 	}
 
-<<<<<<< HEAD
-	/* Special case when user has set very strict latency requirement */
-	if (unlikely(latency_req == 0)) {
-		*stop_tick = false;
-		return 0;
-	}
-
-=======
->>>>>>> 12dd08fa954f (Merge tag 'pm-4.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm)
 	/* determine the expected residency time, round up */
 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&delta_next));
 
-	get_iowait_load(&nr_iowaiters, &cpu_load);
+	nr_iowaiters = nr_iowait_cpu(dev->cpu);
 	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
 
 	if (unlikely(drv->state_count <= 1 || latency_req == 0) ||
@@ -339,9 +317,10 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 	     !drv->states[0].disabled && !dev->states_usage[0].disable)) {
 		/*
 		 * In this case state[0] will be used no matter what, so return
-		 * it right away and keep the tick running.
+		 * it right away and keep the tick running if state[0] is a
+		 * polling one.
 		 */
-		*stop_tick = false;
+		*stop_tick = !(drv->states[0].flags & CPUIDLE_FLAG_POLLING);
 		return 0;
 	}
 
@@ -374,7 +353,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 		 * Use the performance multiplier and the user-configurable
 		 * latency_req to determine the maximum exit latency.
 		 */
-		interactivity_req = predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
+		interactivity_req = predicted_us / performance_multiplier(nr_iowaiters);
 		if (latency_req > interactivity_req)
 			latency_req = interactivity_req;
 	}
@@ -386,8 +365,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 	idx = -1;
 	for (i = 0; i < drv->state_count; i++) {
 		struct cpuidle_state *s = &drv->states[i];
+		struct cpuidle_state_usage *su = &dev->states_usage[i];
 
-		if (dev->states_usage[i].disable)
+		if (s->disabled || su->disable)
 			continue;
 
 		if (idx == -1)
@@ -431,16 +411,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 
 			return idx;
 		}
-		if (s->exit_latency > latency_req) {
-			/*
-			 * If we break out of the loop for latency reasons, use
-			 * the target residency of the selected state as the
-			 * expected idle duration so that the tick is retained
-			 * as long as that target residency is low enough.
-			 */
-			predicted_us = drv->states[idx].target_residency;
+		if (s->exit_latency > latency_req)
 			break;
-		}
+
 		idx = i;
 	}
 
@@ -465,7 +438,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 			 * tick, so try to correct that.
 			 */
 			for (i = idx - 1; i >= 0; i--) {
-				if (dev->states_usage[i].disable)
+				if (drv->states[i].disabled ||
+				    dev->states_usage[i].disable)
 					continue;
 
 				idx = i;
@@ -474,10 +448,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 			}
 		}
 	}
-
 	return idx;
 }
-
 /**
  * menu_reflect - records that data structures need update
  * @dev: the CPU
