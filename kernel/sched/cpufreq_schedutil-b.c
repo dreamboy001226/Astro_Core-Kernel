@@ -586,7 +586,17 @@ static int sugov_init(struct cpufreq_policy *policy)
 		goto stop_kthread;
 	}
 
-	tunables->rate_limit_us = 50000;
+	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask)) {
+		tunables->rate_limit_us = 16000;
+	}
+
+	if (cpumask_test_cpu(policy->cpu, cpu_perf_mask)) {
+		tunables->rate_limit_us = 48000;
+	}
+
+        if (cpumask_test_cpu(policy->cpu, cpu_prime_mask)) {
+                tunables->rate_limit_us = 32000;
+        }
 
 	policy->governor_data = sg_policy;
 	sg_policy->tunables = tunables;
