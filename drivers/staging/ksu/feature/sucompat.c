@@ -20,11 +20,10 @@ static void __user *userspace_stack_buffer(const void *d, size_t len)
 
 	volatile unsigned long start_stack = current->mm->start_stack;
 	unsigned int step = 32;
-	char __user *p = NULL;
 	
 start_loop:
-	p = (void __user *)(start_stack - step - len);
-
+	;
+	char __user *p = (void __user *)(start_stack - step - len);
 	if (IS_ENABLED(CONFIG_KSU_DEBUG))
 		pr_info("%s: start_stack: %lx p: %lx len: %zu\n", __func__, start_stack, (unsigned long)p, len );
 
@@ -151,6 +150,8 @@ static noinline int ksu_sucompat_user_common(const char __user **filename_user,
 	if (!escalate)
 		goto no_escalate;
 
+	ksu_sulog_emit(KSU_SULOG_EVENT_SUCOMPAT, NULL, NULL, GFP_KERNEL);
+
 	if (!!escape_with_root_profile())
 		return 0;
 
@@ -215,6 +216,8 @@ static noinline int ksu_sucompat_kernel_common(void *filename_ptr, const char *f
 
 	if (!escalate)
 		goto no_escalate;
+
+	ksu_sulog_emit(KSU_SULOG_EVENT_SUCOMPAT, NULL, NULL, GFP_KERNEL);
 
 	if (!!escape_with_root_profile())
 		return 0;
@@ -347,14 +350,14 @@ static const struct ksu_feature_handler su_compat_handler = {
 };
 
 // sucompat: permited process can execute 'su' to gain root access.
-void ksu_sucompat_init()
+void __init ksu_sucompat_init()
 {
 	if (ksu_register_feature_handler(&su_compat_handler)) {
 		pr_err("Failed to register su_compat feature handler\n");
 	}
 }
 
-void ksu_sucompat_exit()
+void __exit ksu_sucompat_exit()
 {
 	ksu_unregister_feature_handler(KSU_FEATURE_SU_COMPAT);
 }

@@ -54,15 +54,15 @@ static struct ksu_sulog_pending_event *ksu_sulog_capture(__u16 event_type, const
 	__u32 argv_len;
 	__u32 remaining;
 	char *filename_buf;
-	bool is_ioctl = false;
+	bool should_skip_copy = false;
 
 	if (!ksu_sulog_is_enabled())
 		return NULL;
 	
-	if (event_type == KSU_SULOG_EVENT_IOCTL_GRANT_ROOT) {
+	if (event_type == KSU_SULOG_EVENT_IOCTL_GRANT_ROOT || event_type == KSU_SULOG_EVENT_SUCOMPAT) {
 		filename_len = 0;
 		argv_len = 0;
-		is_ioctl = true;
+		should_skip_copy = true;
 		goto alloc;
 	}
 
@@ -87,7 +87,7 @@ alloc:
 	event = payload;
 	ksu_sulog_fill_task_info(event, event_type, 0);
 
-	if (is_ioctl)
+	if (should_skip_copy)
 		goto skip_copy;
 
 	remaining = KSU_SULOG_MAX_PAYLOAD_LEN - sizeof(*event);
@@ -181,7 +181,7 @@ void ksu_sulog_emit_pending(struct ksu_sulog_pending_event *pending, int retval,
 int ksu_sulog_emit_grant_root(int retval, __u32 uid, __u32 euid, gfp_t gfp)
 {
 	if (!ksu_sulog_is_enabled())
-		return NULL;
+		return 0;
 
 	struct ksu_sulog_pending_event *pending;
 	struct ksu_sulog_identity identity = {
@@ -197,8 +197,11 @@ int ksu_sulog_emit_grant_root(int retval, __u32 uid, __u32 euid, gfp_t gfp)
 	return 0;
 }
 
-int ksu_sulog_emit_bprm(__u16 event_type, const char *bprm_argv, size_t bprm_argv_len, gfp_t gfp)
+int ksu_sulog_emit(__u16 event_type, const char *bprm_argv, size_t bprm_argv_len, gfp_t gfp)
 {
+	if (!ksu_sulog_is_enabled())
+		return 0;
+
 	struct ksu_sulog_pending_event *pending;
 
 	pending = ksu_sulog_capture(event_type, bprm_argv, bprm_argv_len, gfp);
@@ -209,16 +212,15 @@ int ksu_sulog_emit_bprm(__u16 event_type, const char *bprm_argv, size_t bprm_arg
 	return 0;
 }
 
-void ksu_sulog_emit_bprm_pre(const char *filename)
+void ksu_sulog_emit_bprm(const char *filename)
 {
-	if (!current->mm)
-		return;
-
-	kuid_t current_uid = current_uid();
-	if (!!ksu_get_uid_t(current_uid))
-		return;
-
 	if (!ksu_sulog_is_enabled())
+		return;
+
+	if (!is_ksu_domain())
+		return;
+
+	if (!current->mm)
 		return;
 
 	unsigned long arg_start = current->mm->arg_start;
@@ -260,10 +262,7 @@ flatten:
 flatten_done:
 	//	this should look like
 	//      /system/bin/sh\0-c sh -c id
-	if (!strcmp(filename, "/data/adb/ksud"))
-		ksu_sulog_emit_bprm(KSU_SULOG_EVENT_SUCOMPAT, args, argv_copy_len, GFP_KERNEL);
-	else
-		ksu_sulog_emit_bprm(KSU_SULOG_EVENT_ROOT_EXECVE, args, argv_copy_len, GFP_KERNEL);
+	ksu_sulog_emit(KSU_SULOG_EVENT_ROOT_EXECVE, args, argv_copy_len, GFP_KERNEL);
 }
 
 struct ksu_event_queue *ksu_sulog_get_queue(void)

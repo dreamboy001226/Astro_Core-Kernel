@@ -139,6 +139,25 @@ __weak int close_fd(unsigned fd)
 }
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
+static inline struct file *ksu_dentry_open(const struct path *path, int flags, const struct cred *cred)
+{
+	return dentry_open((*path).dentry, (*path).mnt, flags, cred);
+}
+#define dentry_open ksu_dentry_open
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 13, 0)
+#ifndef replace_fops
+#define replace_fops(f, fops) \
+	do {	\
+		struct file *__file = (f); \
+		fops_put(__file->f_op); \
+		BUG_ON(!(__file->f_op = (fops))); \
+	} while(0)
+#endif
+#endif
+
 /**
  * ksu_copy_from_user_retry
  * try nofault copy first, if it fails, try with plain
@@ -156,17 +175,31 @@ static __always_inline long ksu_copy_from_user_retry(void *to, const void __user
 	return copy_from_user(to, from, count);
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 11, 0) && !defined(KSU_HAS_ITERATE_DIR)
-struct dir_context {
-	const filldir_t actor;
-	loff_t pos;
-};
-
-static int iterate_dir(struct file *file, struct dir_context *ctx)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 2, 0) // caller is reponsible for sanity!
+static inline void ksu_zeroed_strncpy(char *dest, const char *src, size_t count)
 {
-	return vfs_readdir(file, ctx->actor, ctx);
+	// this is actually faster due to dead store elimination
+	// count - 1 as implicit null termination
+	__builtin_memset(dest, 0, count);
+	__builtin_strncpy(dest, src, count - 1);
 }
-#endif // ! KSU_HAS_ITERATE_DIR
+#define strscpy ksu_zeroed_strncpy
+#define strscpy_pad ksu_zeroed_strncpy
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+#define d_is_reg(dentry) S_ISREG((dentry)->d_inode->i_mode)
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0)
+struct user_struct *ksu_alloc_uid(kuid_t uid) { return alloc_uid(current_user_ns(), uid); }
+#define alloc_uid ksu_alloc_uid
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 11, 0) && !defined(KSU_HAS_ITERATE_DIR)
+struct dir_context { const filldir_t actor; loff_t pos; };
+#define iterate_dir(file, ctx) vfs_readdir(file, (ctx)->actor, ctx)
+#endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 18, 0)
 __weak char *bin2hex(char *dst, const void *src, size_t count)
@@ -179,35 +212,24 @@ __weak char *bin2hex(char *dst, const void *src, size_t count)
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
-static inline struct inode *ksu_file_inode(struct file *f)
-{
-	return f->f_path.dentry->d_inode;
-}
-#define file_inode ksu_file_inode
+#define file_inode(f) ((f)->f_path.dentry->d_inode)
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 1, 0) && !defined(KSU_HAS_SELINUX_INODE)
-static inline struct inode_security_struct *selinux_inode(const struct inode *inode)
-{
-	return inode->i_security;
-}
+#define selinux_inode(inode) ((inode)->i_security)
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 1, 0) && !defined(KSU_HAS_SELINUX_CRED)
-static inline struct task_security_struct *selinux_cred(const struct cred *cred)
-{
-	return cred->security;
-}
+#define selinux_cred(cred) ((cred)->security)
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION (4, 15, 0)
 __weak void groups_sort(struct group_info *group_info) { } // no-op
 #endif
 
-static inline void ksu_kfree_byref(void *buf)
-{ 
-	kfree(*(void **)buf); 
-}
+#ifndef U16_MAX
+#define	U16_MAX	((u16)(~0U))
+#endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION (4, 12, 0) && !defined(EPOLLIN)
 #define EPOLLIN		0x00000001
@@ -228,8 +250,8 @@ static inline void ksu_kfree_byref(void *buf)
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION (3, 15, 0)
-// this is wrong, we just want it to build
-#define task_ppid_nr task_pid_nr
+static inline pid_t ksu_task_ppid_nr(const struct task_struct *tsk) { return (pid_t)sys_getppid(); }
+#define task_ppid_nr ksu_task_ppid_nr
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION (3, 17, 0)
@@ -241,5 +263,7 @@ static inline u64 ksu_ktime_get_ns(void) { return ktime_to_ns(ktime_get()); }
 #ifndef struct_size
 #define struct_size(p, member, n) (sizeof(*(p)) + (n) * sizeof(*(p)->member))
 #endif
+
+static inline void ksu_kfree_byref(void *buf) { kfree(*(void **)buf); }
 
 #endif

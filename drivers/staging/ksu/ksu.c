@@ -102,13 +102,13 @@ extern void ksu_supercalls_init();
 // track backports and other quirks here
 // ref: kernel_compat.c, Makefile
 // yes looks nasty
-#if defined(CONFIG_KSU_KPROBES_KSUD)
-	#define FEAT_1 " +kp_ksud"
+#if defined(CONFIG_KSU_DEBUG)
+	#define FEAT_1 " +debug"
 #else
 	#define FEAT_1 ""
 #endif
-#if defined(CONFIG_KSU_KRETPROBES_SUCOMPAT)
-	#define FEAT_2 " +rp_sucompat"
+#if defined(CONFIG_KSU_KPROBES_KSUD)
+	#define FEAT_2 " +kp_ksud"
 #else
 	#define FEAT_2 ""
 #endif

@@ -47,8 +47,11 @@ static void try_umount(const char *mnt, int flags)
 	ksu_umount_mnt(mnt, &path, flags);
 }
 
-static int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
+static inline int ksu_handle_umount(struct cred *new, const struct cred *old)
 {
+	uid_t new_uid = ksu_get_uid_t(new->uid);
+	uid_t old_uid = ksu_get_uid_t(old->uid);
+
 	// if there isn't any module mounted, just ignore it!
 	if (!ksu_module_mounted) {
 		return 0;
@@ -80,7 +83,7 @@ static int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 	// because some su apps may setuid to untrusted_app but they are in global mount namespace
 	// when we umount for such process, that is a disaster!
 	// also handle case 4 and 5
-	bool is_zygote_child = is_zygote(current_cred());
+	bool is_zygote_child = is_zygote(old);
 	if (!is_zygote_child) {
 		pr_info("handle umount ignore non zygote child: %d\n", current->pid);
 		return 0;
@@ -103,14 +106,14 @@ static int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 	return 0;
 }
 
-void ksu_kernel_umount_init(void)
+void __init ksu_kernel_umount_init(void)
 {
 	if (ksu_register_feature_handler(&kernel_umount_handler)) {
 		pr_err("Failed to register kernel_umount feature handler\n");
 	}
 }
 
-void ksu_kernel_umount_exit(void)
+void __exit ksu_kernel_umount_exit(void)
 {
 	ksu_unregister_feature_handler(KSU_FEATURE_KERNEL_UMOUNT);
 }

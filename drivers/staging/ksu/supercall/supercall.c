@@ -47,7 +47,6 @@ int ksu_install_fd(void)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
-
 struct ksu_install_fd_tw {
 	struct callback_head cb;
 	int __user *outp;
@@ -240,11 +239,11 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
 	return 0;
 }
 
-void ksu_supercalls_init(void)
+void __init ksu_supercalls_init(void)
 {
 	ksu_supercall_dump_commands();
 	
 	sulog_init_heap(); // grab heap memory for sulog
 }
 
-void ksu_supercalls_exit(void) { }
+void __exit ksu_supercalls_exit(void) { }

@@ -70,13 +70,13 @@ LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-	return ksu_handle_umount(old_uid, new_uid);
+	return ksu_handle_umount(new, old);
 }
 
 LSM_HANDLER_TYPE ksu_bprm_check(struct linux_binprm *bprm)
 {
 	if (unlikely(!current->seccomp.mode))
-		ksu_sulog_emit_bprm_pre((const char *)bprm->filename);
+		ksu_sulog_emit_bprm((const char *)bprm->filename);
 
 	if (likely(!ksu_execveat_hook))
 		return 0;
@@ -186,10 +186,12 @@ static void ksu_lsm_hook_restore(void)
 	preempt_disable();
 	local_irq_disable();
 
+#if 0 // we need this now for sulog
 	if (orig_bprm_check_security) {
 		pr_info("%s: restoring: 0x%lx to 0x%lx\n", __func__, (long)ops->bprm_check_security, (long)orig_bprm_check_security);
 		ops->bprm_check_security = orig_bprm_check_security;
 	}
+#endif
 
 	if (orig_file_permission) {
 		pr_info("%s: restoring: 0x%lx to 0x%lx\n", __func__, (long)ops->file_permission, (long)orig_file_permission);

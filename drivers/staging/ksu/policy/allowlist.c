@@ -135,9 +135,7 @@ static bool profile_valid(struct app_profile *profile)
 		static const size_t domain_len = sizeof(profile->rp_config.profile.selinux_domain);
 		if (unlikely(need_migrate_su_domain)) {
 			if (strncmp(domain, "u:r:su:s0", domain_len) == 0) {
-				memset(domain, 0, domain_len);
-				// domain_len - 1 as implicit null termination
-				strncpy(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len - 1);
+				strscpy_pad(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
 				pr_info("migrated profile domain: %s\n", profile->key);
 			}
 		}
@@ -528,7 +526,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
 	}
 }
 
-void ksu_allowlist_init(void)
+void __init ksu_allowlist_init(void)
 {
 	int i;
 
@@ -543,7 +541,7 @@ void ksu_allowlist_init(void)
 	init_default_profiles();
 }
 
-void ksu_allowlist_exit(void)
+void __exit ksu_allowlist_exit(void)
 {
 	struct perm_data *np = NULL;
 	struct perm_data *n = NULL;
