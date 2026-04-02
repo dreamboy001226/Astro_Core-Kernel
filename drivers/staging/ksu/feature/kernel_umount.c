@@ -65,12 +65,13 @@ static inline int ksu_handle_umount(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-	// There are 5 scenarios:
+	// There are 6 scenarios:
 	// 1. Normal app: zygote -> appuid
 	// 2. Isolated process forked from zygote: zygote -> isolated_process
 	// 3. App zygote forked from zygote: zygote -> appuid
-	// 4. Isolated process froked from app zygote: appuid -> isolated_process (already handled by 3)
-	// 5. Isolated process froked from webview zygote (no need to handle, app cannot run custom code)
+	// 4. Webview zygote forked from zygote: zygote -> WEBVIEW_ZYGOTE_UID (no need to handle, app cannot run custom code)
+	// 5. Isolated process forked from app zygote: appuid -> isolated_process (already handled by 3)
+	// 6. Isolated process forked from webview zygote (no need to handle, app cannot run custom code)
 	if (!is_appuid(new_uid) && !is_isolated_process(new_uid)) {
 		return 0;
 	}

@@ -250,8 +250,7 @@ __weak void groups_sort(struct group_info *group_info) { } // no-op
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION (3, 15, 0)
-static inline pid_t ksu_task_ppid_nr(const struct task_struct *tsk) { return (pid_t)sys_getppid(); }
-#define task_ppid_nr ksu_task_ppid_nr
+#define task_ppid_nr(a) (pid_t)sys_getppid()
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION (3, 17, 0)
@@ -262,6 +261,21 @@ static inline u64 ksu_ktime_get_ns(void) { return ktime_to_ns(ktime_get()); }
 // WARNING: no overflow safety!
 #ifndef struct_size
 #define struct_size(p, member, n) (sizeof(*(p)) + (n) * sizeof(*(p)->member))
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION (4, 12, 0)
+#ifndef ALIGN_DOWN
+#define ALIGN_DOWN(x, a) __ALIGN_KERNEL((x) - ((a) - 1), (a))
+#endif
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION (4, 9, 0)
+static inline __s64 ksu_sign_extend64(__u64 value, int index)
+{
+	__u8 shift = 63 - index;
+	return (__s64)(value << shift) >> shift;
+}
+#define untagged_addr(addr) ksu_sign_extend64(addr, 55)
 #endif
 
 static inline void ksu_kfree_byref(void *buf) { kfree(*(void **)buf); }

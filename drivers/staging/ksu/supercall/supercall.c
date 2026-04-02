@@ -243,7 +243,7 @@ void __init ksu_supercalls_init(void)
 {
 	ksu_supercall_dump_commands();
 	
-	sulog_init_heap(); // grab heap memory for sulog
+	tiny_sulog_init_heap(); // grab heap memory for sulog
 }
 
 void __exit ksu_supercalls_exit(void) { }

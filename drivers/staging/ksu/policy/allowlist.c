@@ -299,6 +299,10 @@ bool ksu_uid_should_umount(uid_t uid)
 		// we should not umount on manager!
 		return false;
 	}
+	if (unlikely(uid == WEBVIEW_ZYGOTE_UID)) {
+		// we should not umount for webview zygote
+		return false;
+	}
 	bool found = ksu_get_app_profile(&profile);
 	if (!found) {
 		// no app profile found, it must be non root app
