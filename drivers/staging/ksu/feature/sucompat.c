@@ -150,8 +150,9 @@ static noinline int ksu_sucompat_user_common(const char __user **filename_user,
 	if (!escalate)
 		goto no_escalate;
 
+#ifdef CONFIG_KSU_FEATURE_SULOG
 	ksu_sulog_emit(KSU_SULOG_EVENT_SUCOMPAT, NULL, NULL, GFP_KERNEL);
-
+#endif
 	if (!!escape_with_root_profile())
 		return 0;
 
@@ -217,8 +218,9 @@ static noinline int ksu_sucompat_kernel_common(void *filename_ptr, const char *f
 	if (!escalate)
 		goto no_escalate;
 
+#ifdef CONFIG_KSU_FEATURE_SULOG
 	ksu_sulog_emit(KSU_SULOG_EVENT_SUCOMPAT, NULL, NULL, GFP_KERNEL);
-
+#endif
 	if (!!escape_with_root_profile())
 		return 0;
 
@@ -250,6 +252,10 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	if (unlikely(!ksu_boot_completed))
 		kernel_execve_escape_ksud((void *)(*filename_ptr)->name);
 
+#ifdef CONFIG_KSU_FEATURE_ADBROOT
+	ksu_adb_root_handle_execveat((void *)(*filename_ptr)->name, __never_use_envp);
+#endif
+
 	if (!is_su_allowed((const void **)filename_ptr))
 		return 0;
 
@@ -267,6 +273,9 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 	if (unlikely(!ksu_boot_completed))
 		kernel_execve_escape_ksud((void *)(*filename_ptr)->name);
 
+#ifdef CONFIG_KSU_FEATURE_ADBROOT
+	ksu_adb_root_handle_execveat((void *)(*filename_ptr)->name, envp);
+#endif
 	if (!is_su_allowed((const void **)filename_ptr))
 		return 0;
 
@@ -282,6 +291,9 @@ int ksu_legacy_execve_sucompat(const char **filename_ptr,
 	if (unlikely(!ksu_boot_completed))
 		kernel_execve_escape_ksud((void *)*filename_ptr);
 
+#ifdef CONFIG_KSU_FEATURE_ADBROOT
+	ksu_adb_root_handle_execveat((void *)*filename_ptr, __never_use_envp);
+#endif
 	if (!is_su_allowed((const void **)filename_ptr))
 		return 0;
 

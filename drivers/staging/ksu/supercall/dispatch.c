@@ -10,7 +10,10 @@ static int do_grant_root(void __user *arg)
 
 	pr_info("allow root for: %d\n", ksu_get_uid_t(audit_uid));
 	ret = escape_with_root_profile();
+
+#ifdef CONFIG_KSU_FEATURE_SULOG
 	ksu_sulog_emit_grant_root(ret, ksu_get_uid_t(audit_uid), ksu_get_uid_t(audit_euid), GFP_KERNEL);
+#endif
 
 	return ret;
 }
