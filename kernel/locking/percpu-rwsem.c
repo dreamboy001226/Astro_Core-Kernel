@@ -2,10 +2,12 @@
 #include <linux/rwsem.h>
 #include <linux/percpu.h>
 #include <linux/lockdep.h>
-#include <linux/percpu-rwsem.h>
+#include <linux/fs.h>
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
 #include <linux/errno.h>
+
+#include "rwsem.h"
 
 int __percpu_init_rwsem(struct percpu_rw_semaphore *sem,
 			const char *name, struct lock_class_key *rwsem_key)
