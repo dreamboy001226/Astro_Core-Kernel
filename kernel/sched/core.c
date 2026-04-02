@@ -6849,6 +6849,7 @@ static struct task_struct *__pick_migrate_task(struct rq *rq)
  * should prevent migrations for the detached task and disallow further
  * changes to tsk_cpus_allowed.
  */
+#ifndef CONFIG_HOTPLUG_CPU
 static void
 detach_one_task(struct task_struct *p, struct rq *rq, struct list_head *tasks)
 {
@@ -6858,6 +6859,7 @@ detach_one_task(struct task_struct *p, struct rq *rq, struct list_head *tasks)
 	deactivate_task(rq, p, 0);
 	list_add(&p->se.group_node, tasks);
 }
+#endif
 
 static void attach_tasks(struct list_head *tasks, struct rq *rq)
 {
@@ -6923,13 +6925,6 @@ static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
 			break;
 
 		next = __pick_migrate_task(rq);
-
-		if (!migrate_pinned_tasks && next->flags & PF_KTHREAD &&
-			!cpumask_intersects(avail_cpus, &next->cpus_ptr)) {
-			detach_one_task(next, rq, &tasks);
-			num_pinned_kthreads += 1;
-			continue;
-		}
 
 		/*
 		 * Rules for changing task_struct::cpus_allowed are holding
