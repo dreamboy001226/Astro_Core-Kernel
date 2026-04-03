@@ -1270,9 +1270,7 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 	rcu_read_unlock();
 
 	if (is_gms)
-		snprintf(tmp.release, sizeof(tmp.release), "%u.%u.%u",
-			 LINUX_VERSION_MAJOR, LINUX_VERSION_PATCHLEVEL,
-			 LINUX_VERSION_SUBLEVEL);
+		snprintf(tmp.release, sizeof(tmp.release), "4.19.113");
 
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
 		return -EFAULT;
