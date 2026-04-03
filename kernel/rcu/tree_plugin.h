@@ -1570,6 +1570,7 @@ static void rcu_nocb_lock(struct rcu_data *rdp)
 	raw_spin_lock(&rdp->nocb_lock);
 }
 
+#ifdef CONFIG_HOTPLUG_CPU
 /*
  * Release the specified rcu_data structure's ->nocb_lock, but only
  * if it corresponds to a no-CBs CPU.
@@ -1581,6 +1582,7 @@ static void rcu_nocb_unlock(struct rcu_data *rdp)
 		raw_spin_unlock(&rdp->nocb_lock);
 	}
 }
+#endif
 
 /*
  * Release the specified rcu_data structure's ->nocb_lock and restore
@@ -2650,10 +2652,12 @@ static void rcu_nocb_lock(struct rcu_data *rdp)
 {
 }
 
+#ifdef CONFIG_HOTPLUG_CPU
 /* No ->nocb_lock to release.  */
 static void rcu_nocb_unlock(struct rcu_data *rdp)
 {
 }
+#endif
 
 /* No ->nocb_lock to release.  */
 static void rcu_nocb_unlock_irqrestore(struct rcu_data *rdp,
