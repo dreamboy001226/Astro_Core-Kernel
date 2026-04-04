@@ -1571,6 +1571,18 @@ static void rcu_nocb_lock(struct rcu_data *rdp)
 }
 
 /*
+ * Release the specified rcu_data structure's ->nocb_lock, but only
+ * if it corresponds to a no-CBs CPU.
+ */
+static void rcu_nocb_unlock(struct rcu_data *rdp)
+{
+	if (rcu_segcblist_is_offloaded(&rdp->cblist)) {
+		lockdep_assert_irqs_disabled();
+		raw_spin_unlock(&rdp->nocb_lock);
+	}
+}
+
+/*
  * Release the specified rcu_data structure's ->nocb_lock and restore
  * interrupts, but only if it corresponds to a no-CBs CPU.
  */
@@ -2635,6 +2647,11 @@ static void show_rcu_nocb_state(struct rcu_data *rdp)
 
 /* No ->nocb_lock to acquire.  */
 static void rcu_nocb_lock(struct rcu_data *rdp)
+{
+}
+
+/* No ->nocb_lock to release.  */
+static void rcu_nocb_unlock(struct rcu_data *rdp)
 {
 }
 
