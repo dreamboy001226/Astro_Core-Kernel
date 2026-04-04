@@ -126,6 +126,4 @@ source "drivers/staging/sti/Kconfig"
 
 source "drivers/staging/ksu/Kconfig"
 
-source "drivers/staging/map_spoof/Kconfig"
-
 endif # STAGING
