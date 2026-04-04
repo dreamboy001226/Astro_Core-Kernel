@@ -4,23 +4,16 @@ static bool ksu_adb_root __read_mostly = false;
 
 static long is_exec_adbd(const char __user **filename_user)
 {
-	static const char kAdbd[] = "/adbd";
-	static const size_t kAdbdLen = sizeof(kAdbd) - 1;
 	// should be bigger than `/apex/com.android.adbd/bin/adbd`
-	char buf[40];
-	long ret;
-	memset(buf, 0, sizeof(buf));
-
-	ret = strncpy_from_user(buf, *filename_user, sizeof(buf));
-	if (ret < 0) {
-		pr_warn("Access filename when adb_root_handle_execve failed: %ld\n", ret);
-		return ret;
-	}
-
-	// strncpy_from_user may copy `sizeof(buf)` bytes
-	if (ret < kAdbdLen || ret >= sizeof(buf) || memcmp(buf + ret - kAdbdLen, kAdbd, kAdbdLen + 1) != 0) {
+	static const size_t bufsize = strlen("/apex/com.android.adbd/bin/adbd") + 1;
+	char buf[40] = { 0 };
+	if (!!copy_from_user(buf, *filename_user, bufsize))
 		return 0;
-	}
+
+	if (!!endswith(buf, "/adbd"))
+		return 0;
+
+	pr_info("%s: adbd: %s \n", __func__, buf);
 
 	return 1;
 }
