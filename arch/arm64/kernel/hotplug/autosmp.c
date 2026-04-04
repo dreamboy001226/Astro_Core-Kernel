@@ -86,7 +86,7 @@ static struct asmp_param_struct {
 };
 
 static unsigned int cycle = 0;
-int asmp_enabled __read_mostly = 1;
+int asmp_enabled __read_mostly = 0;
 
 static void asmp_online_cpus(unsigned int cpu)
 {
