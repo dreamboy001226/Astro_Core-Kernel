@@ -119,24 +119,17 @@ static inline void ksu_kvfree(void *buf)
 #endif
 
 // for supercalls.c fd install tw
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
-#ifndef TWA_RESUME
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0) && !defined(TWA_RESUME)
 #define TWA_RESUME 1
 #endif
-#endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
+// this is ksys_close, however that is spotty to use 
+// as 5.10 backported close_fd and rekt ksys_close
+// so we use what it does internally, __close_fd
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 11, 0)
+#define close_fd(fd) __close_fd(current->files, fd)
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
 #define close_fd sys_close
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(5, 11, 0)
-#include <linux/fdtable.h>
-__weak int close_fd(unsigned fd)
-{
-	// this is ksys_close, but that shit is inline
-	// its problematic to cascade a weak symbol for it
-	return __close_fd(current->files, fd);
-}
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
