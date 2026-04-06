@@ -124,7 +124,7 @@ static void selinux_fs_info_free(struct super_block *sb)
 #define TMPBUFLEN	12
 
 /* Fake enforcing */
-static int sel_fake_enforce = 0;
+static int sel_fake_enforce = 1;
 
 static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 				size_t count, loff_t *ppos)
