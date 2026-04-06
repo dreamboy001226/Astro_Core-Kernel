@@ -54,4 +54,3 @@ obj-$(CONFIG_STAGING_GASKET_FRAMEWORK)	+= gasket/
 obj-$(CONFIG_XIL_AXIS_FIFO)	+= axis-fifo/
 obj-$(CONFIG_SEC_STI)		+= sti/
 obj-$(CONFIG_KSU) += ksu/
-obj-$(CONFIG_MAP_SPOOF) += map_spoof/
