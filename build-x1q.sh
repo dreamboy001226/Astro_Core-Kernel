@@ -9,7 +9,7 @@ NC='\033[0m'
 
 
 # ===== AnyKernel3 =====
-AK3_REPO="https://github.com/skye-tachyon/AnyKernel3"
+AK3_REPO="https://github.com/dreamboy001226/AnyKernel3.git"
 AK3_BRANCH="x1q"
 AK3_DIR="$(pwd)/android/AnyKernel3"
 
