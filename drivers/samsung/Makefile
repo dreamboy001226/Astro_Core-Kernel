@@ -7,4 +7,6 @@ obj-$(CONFIG_SEC_SYSUP)		+= sec_sysup.o
 obj-$(CONFIG_SEC_DEBUG)		+= debug/
 
 obj-$(CONFIG_SEC_DEBUG_TEST)	+= debug/
+obj-$(CONFIG_ARGOS)		+= argos/
+
 GCOV_PROFILE_sec_class.o		:=y
