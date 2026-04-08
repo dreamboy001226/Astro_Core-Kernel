@@ -139,7 +139,6 @@ static void __ref do_deferred_initcalls(struct work_struct *work)
 		do_one_initcall(initcall_from_entry(fn));
 
 	ftrace_free_init_mem();
-	jump_label_invalidate_initmem();
 	free_initmem();
 }
 
