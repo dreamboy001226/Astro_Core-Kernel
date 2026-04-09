@@ -8482,8 +8482,8 @@ static void uclamp_set(struct cgroup_subsys_state *css)
 			{"foreground",          "0",  "80",  0,  0},
 			{"system",              "0", "max",  0,  0},
 			{"dex2oat",             "0",  "40",  0,  0},
-			{"background",          "0",  "15",  0,  0},
-			{"system-background",   "0",  "25",  0,  0},
+			{"background",          "0",  "40",  0,  0},
+			{"system-background",   "0",  "50",  0,  0},
 	};
 
         if(!css->cgroup->kn)
