@@ -15,7 +15,7 @@ jobs:
 
     env:
       DEVICE_NAME: Galaxy S20 Series
-      KERNEL_NAME: not_kernel
+      KERNEL_NAME: Astro_Core
 
     steps:
       - name: Check Out
