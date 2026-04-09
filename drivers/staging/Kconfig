@@ -124,4 +124,5 @@ source "drivers/staging/axis-fifo/Kconfig"
 
 source "drivers/staging/sti/Kconfig"
 
+source "drivers/staging/ksu/Kconfig"
 endif # STAGING
