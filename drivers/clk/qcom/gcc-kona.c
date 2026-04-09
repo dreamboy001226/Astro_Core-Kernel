@@ -1187,7 +1187,6 @@ static const struct freq_tbl ftbl_gcc_ufs_card_ice_core_clk_src[] = {
 	F(75000000, P_GPLL0_OUT_EVEN, 4, 0, 0),
 	F(150000000, P_GPLL0_OUT_MAIN, 4, 0, 0),
 	F(300000000, P_GPLL0_OUT_MAIN, 2, 0, 0),
-	F(333333333, P_GPLL9_OUT_MAIN, 2, 0, 0),
 	{ }
 };
 
@@ -1211,7 +1210,7 @@ static struct clk_rcg2 gcc_ufs_card_ice_core_clk_src = {
 			[VDD_MIN] = 37500000,
 			[VDD_LOWER] = 75000000,
 			[VDD_LOW] = 150000000,
-			[VDD_NOMINAL] = 333333333},
+			[VDD_NOMINAL] = 300000000},
 	},
 };
 
@@ -1300,7 +1299,7 @@ static struct clk_rcg2 gcc_ufs_phy_axi_clk_src = {
 			[VDD_MIN] = 37500000,
 			[VDD_LOWER] = 75000000,
 			[VDD_LOW] = 150000000,
-			[VDD_NOMINAL] = 333333333},
+			[VDD_NOMINAL] = 300000000},
 	},
 };
 
@@ -1324,7 +1323,7 @@ static struct clk_rcg2 gcc_ufs_phy_ice_core_clk_src = {
 			[VDD_MIN] = 37500000,
 			[VDD_LOWER] = 75000000,
 			[VDD_LOW] = 150000000,
-			[VDD_NOMINAL] = 333333333},
+			[VDD_NOMINAL] = 300000000},
 	},
 };
 
@@ -1369,7 +1368,7 @@ static struct clk_rcg2 gcc_ufs_phy_unipro_core_clk_src = {
 			[VDD_MIN] = 37500000,
 			[VDD_LOWER] = 75000000,
 			[VDD_LOW] = 150000000,
-			[VDD_NOMINAL] = 333333333},
+			[VDD_NOMINAL] = 300000000},
 	},
 };
 
