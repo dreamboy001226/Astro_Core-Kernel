@@ -1,7 +1,7 @@
 #include <linux/cgroup.h>
 #include "sched.h"
 
-#define BOOSTGROUPS_COUNT 5
+#define BOOSTGROUPS_COUNT 6
 
 struct schedtune {
 	/* SchedTune CGroup subsystem */
