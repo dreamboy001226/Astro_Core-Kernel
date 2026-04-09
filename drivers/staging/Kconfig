@@ -123,6 +123,4 @@ source "drivers/staging/gasket/Kconfig"
 source "drivers/staging/axis-fifo/Kconfig"
 
 source "drivers/staging/sti/Kconfig"
-
-source "drivers/staging/ksu/Kconfig"
 endif # STAGING
