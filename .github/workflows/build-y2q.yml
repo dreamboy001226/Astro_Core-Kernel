@@ -53,7 +53,7 @@ jobs:
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Not_kernel_${{ matrix.device }}
+          name: Astro_Core_${{ matrix.device }}
           path: |
             out/*.zip
             *.zip
