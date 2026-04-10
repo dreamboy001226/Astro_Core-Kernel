@@ -1,1 +1,1 @@
-#obj-y += 
+obj-y += aio_hotplug.o
