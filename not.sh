@@ -24,7 +24,7 @@ rm -rf "$OUT_DIR/arch/arm64/boot/Image"
 rm -rf "$ANYKERNEL_DIR/kona.dtb"
 rm -rf "$OUT_DIR/dtbo.img"
 rm -rf .version .local
-make O="$OUT_DIR" $HOST_BUILD_ENV vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/samsung/r8q.config vendor/not/no_lto.config
+make O="$OUT_DIR" $HOST_BUILD_ENV vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/samsung/r8q.config
 
 echo "*****************************************"
 echo "*****************************************"
