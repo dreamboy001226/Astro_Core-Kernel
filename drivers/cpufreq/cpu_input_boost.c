@@ -14,6 +14,8 @@
 #include <linux/version.h>
 #include <drm/drm_panel.h>
 
+#include <linux/rom_notifier.h>
+
 /* The sched_param struct is located elsewhere in newer kernels */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 #include <uapi/linux/sched/types.h>
@@ -50,12 +52,20 @@ static unsigned int get_input_boost_freq(struct cpufreq_policy *policy)
 {
 	unsigned int freq;
 
-	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask))
-		freq = CONFIG_INPUT_BOOST_FREQ_LP;
-	else if (cpumask_test_cpu(policy->cpu, cpu_perf_mask))
-		freq = CONFIG_INPUT_BOOST_FREQ_PERF;
-	else
-		freq = CONFIG_INPUT_BOOST_FREQ_PERFP;
+	if (is_aosp) {
+		if (cpumask_test_cpu(policy->cpu, cpu_lp_mask))
+			freq = CONFIG_INPUT_BOOST_FREQ_LP;
+		else if (cpumask_test_cpu(policy->cpu, cpu_perf_mask))
+			freq = CONFIG_INPUT_BOOST_FREQ_PERF;
+		else
+			freq = CONFIG_INPUT_BOOST_FREQ_PERFP;
+	} else {
+		if (cpumask_test_cpu(policy->cpu, cpu_lp_mask) ||
+		    cpumask_test_cpu(policy->cpu, cpu_perf_mask))
+			freq = 1171200;
+		else
+			freq = 1190400;
+	}
 	return min(freq, policy->max);
 }
 
