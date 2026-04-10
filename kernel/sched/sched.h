@@ -84,8 +84,6 @@
 # define SCHED_WARN_ON(x)	({ (void)(x), 0; })
 #endif
 
-#include "tune.h"
-
 struct rq;
 struct cpuidle_state;
 
@@ -2307,11 +2305,6 @@ static inline unsigned long cpu_util_cum(int cpu, int delta)
 
 	return (delta >= capacity) ? capacity : delta;
 }
-
-#ifdef CONFIG_SCHED_TUNE
-extern unsigned long stune_util(int cpu, unsigned long other_util,
-				struct sched_walt_cpu_load *walt_load);
-#endif
 
 static inline unsigned long
 cpu_util_freq(int cpu, struct sched_walt_cpu_load *walt_load)

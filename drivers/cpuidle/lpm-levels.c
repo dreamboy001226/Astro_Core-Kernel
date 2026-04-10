@@ -669,19 +669,11 @@ static void update_history(struct cpuidle_device *dev, int idx);
 
 static inline bool lpm_disallowed(s64 sleep_us, int cpu, struct lpm_cpu *pm_cpu)
 {
-	uint64_t bias_time = 0;
-
 	if (cpu_isolated(cpu))
 		goto out;
 
 	if (sleep_disabled)
 		return true;
-
-	bias_time = sched_lpm_disallowed_time(cpu);
-	if (bias_time) {
-		pm_cpu->bias = bias_time;
-		return true;
-	}
 
 out:
 	if (sleep_us < 0)
@@ -1431,20 +1423,6 @@ static int lpm_cpuidle_select(struct cpuidle_driver *drv,
 	return cpu_power_select(dev, cpu);
 }
 
-static void update_ipi_history(int cpu)
-{
-	struct ipi_history *history = &per_cpu(cpu_ipi_history, cpu);
-	ktime_t now = ktime_get();
-
-	history->interval[history->current_ptr] =
-			ktime_to_us(ktime_sub(now,
-			history->cpu_idle_resched_ts));
-	(history->current_ptr)++;
-	if (history->current_ptr >= MAXSAMPLES)
-		history->current_ptr = 0;
-	history->cpu_idle_resched_ts = now;
-}
-
 static void update_history(struct cpuidle_device *dev, int idx)
 {
 	struct lpm_history *history = &per_cpu(hist, dev->cpu);
@@ -1893,8 +1871,6 @@ static int lpm_probe(struct platform_device *pdev)
 		pr_err("Failed to create cluster level nodes\n");
 		goto failed;
 	}
-
-	set_update_ipi_history_callback(update_ipi_history);
 
 	/* Add lpm_debug to Minidump*/
 	strlcpy(md_entry.name, "KLPMDEBUG", sizeof(md_entry.name));
