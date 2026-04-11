@@ -1,0 +1,29 @@
+name: Kernel Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: true   # pulls AnyKernel3 + KernelSU if added as submodules
+
+      - name: Setup toolchain
+        run: |
+          mkdir -p tc
+          git clone --depth=1 -b 18 https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone tc/clang
+
+      - name: Build kernel
+        run: bash build.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-zip
+          path: AnyKernel3/y2q/*.zip
