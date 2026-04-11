@@ -14,7 +14,7 @@ AK3_DIR="$(pwd)/android/AnyKernel3"
 
 ZIPNAME="Astro_Core-$(date '+%Y%m%d').zip"
 TC_DIR="$(pwd)/tc/clang-r522817"
-DEFCONFIG="vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/samsung/y2q.config"
+DEFCONFIG="vendor/kona-not_defconfig vendor/samsung/kona-sec-not.config vendor/samsung/y2q.config vendor/not/full_lto.config"
 
 OUT_DIR="$(pwd)/out"
 BOOT_DIR="$OUT_DIR/arch/arm64/boot"
