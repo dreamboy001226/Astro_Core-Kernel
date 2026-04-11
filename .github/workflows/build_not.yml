@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        device: [y2q, x1q, c1q, c2q]
+        device: [y2q]
 
     env:
       DEVICE_NAME: Galaxy S20 Series
