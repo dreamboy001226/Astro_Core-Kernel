@@ -1,29 +1,63 @@
-name: Kernel Build
+name: Astro Core kernel sm8250
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-kernel:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        device: [y2q, x1q, c1q, c2q]
+
+    env:
+      DEVICE_NAME: Galaxy S20 Series
+      KERNEL_NAME: Astro_Core
+
     steps:
-      - name: Checkout source
+      - name: Check Out
         uses: actions/checkout@v4
         with:
           submodules: true   # pulls AnyKernel3 + KernelSU if added as submodules
+
+      - name: Set Timezone
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/Sao_Paulo"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu bc flex bison libssl-dev \
+            libncurses5-dev zip clang lld
 
       - name: Setup toolchain
         run: |
           mkdir -p tc
           git clone --depth=1 -b 18 https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone tc/clang
 
-      - name: Build kernel
-        run: bash build.sh
+      - name: Set Build Start Time
+        run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
-      - name: Upload artifact
+      - name: Run build script
+        run: bash build.sh ${{ matrix.device }}
+
+      - name: Set Build End Time
+        run: echo "END_TIME=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Calculate Build Duration
+        run: |
+          duration=$((END_TIME - START_TIME))
+          minutes=$((duration / 60))
+          seconds=$((duration % 60))
+          echo "BUILD_DURATION=${minutes}m ${seconds}s" >> $GITHUB_ENV
+
+      - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-zip
-          path: AnyKernel3/y2q/*.zip
+          name: Astro_Core_${{ matrix.device }}
+          path: AnyKernel3/${{ matrix.device }}/*.zip
