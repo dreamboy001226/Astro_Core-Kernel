@@ -44,7 +44,7 @@ jobs:
         run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Run build script
-        run: bash build.sh ${{ matrix.device }}
+        run: bash not.sh ${{ matrix.device }}
 
       - name: Set Build End Time
         run: echo "END_TIME=$(date +%s)" >> $GITHUB_ENV
