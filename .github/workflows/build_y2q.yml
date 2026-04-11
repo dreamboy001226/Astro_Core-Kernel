@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        device: [y2q]
+        device: [y2q ,x1q ,c1q ,c2q]
 
     env:
       DEVICE_NAME: Galaxy S20 Series
@@ -43,8 +43,11 @@ jobs:
       - name: Set Build Start Time
         run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
+      - name: Make build script executable
+        run: chmod +x build-${{ matrix.device }}.sh
+
       - name: Run build script
-        run: bash build-y2q.sh
+        run: ./build-${{ matrix.device }}.sh
 
       - name: Set Build End Time
         run: echo "END_TIME=$(date +%s)" >> $GITHUB_ENV
