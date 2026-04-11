@@ -251,11 +251,11 @@ static inline unsigned long apply_dvfs_headroom(unsigned long util, int cpu)
         /*
          * If util is rising, add a small extra headroom to get ahead of it.
          *
-         * Look 1ms into the future; if util is still climbing, boost headroom
+         * Look 2ms into the future; if util is still climbing, boost headroom
          * slightly (by 12.5%) but cap the addition at 1/8th of remaining
          * capacity so we don't over-react near the top end.
          */
-        future = approximate_util_avg(util, 1000); /* 1 ms lookahead */
+        future = approximate_util_avg(util, 2000); /* 2 ms lookahead */
 
         if (future > util) {
                 burst = future - util;
