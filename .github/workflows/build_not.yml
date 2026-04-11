@@ -21,7 +21,7 @@ jobs:
       - name: Check Out
         uses: actions/checkout@v4
         with:
-          submodules: true   # pulls AnyKernel3 + KernelSU if added as submodules
+          submodules: true   # KernelSU if added as submodules
 
       - name: Set Timezone
         uses: szenius/set-timezone@v1.2
@@ -44,7 +44,7 @@ jobs:
         run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Run build script
-        run: bash not.sh ${{ matrix.device }}
+        run: bash build-y2q.sh
 
       - name: Set Build End Time
         run: echo "END_TIME=$(date +%s)" >> $GITHUB_ENV
